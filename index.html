@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
 <meta name="theme-color" content="#EFE8DC">
-<!-- полноэкранный режим при добавлении на экран «Домой» -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -275,6 +274,7 @@ body{
   color:var(--ink);
 }
 .drop-sub{color:var(--grey);}
+.drop-lead.dim{color:var(--grey);font-size:16px;}
 
 .plus{position:relative;width:26px;height:26px;flex:0 0 auto;}
 .plus::before,.plus::after{content:"";position:absolute;background:var(--accent);}
@@ -285,7 +285,7 @@ body{
 .progress span{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease;}
 
 /* добавленные вещи — мелко, лентой */
-.shelf{margin-top:30px;}
+.shelf{margin-top:30px;padding-bottom:44px;}
 .shelf[hidden]{display:none;}
 .shelf-head{padding:0 20px;color:var(--grey);}
 .shelf-head b{color:var(--accent);font-weight:400;}
@@ -318,8 +318,8 @@ body{
 .slab{
   margin-top:auto;                /* футер прижат к низу экрана */
   padding:30px 20px 34px;
-  background:var(--ink);
-  color:var(--paper);
+  background:#E6DDCD;             /* на тон темнее поля, чтобы отделялась, но не спорила */
+  color:var(--ink);
 }
 
 .steps{margin:22px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;}
@@ -328,13 +328,13 @@ body{
   align-items:baseline;
   gap:16px;
   padding:15px 0;
-  border-top:1px solid rgba(247,239,228,.18);
+  border-top:1px solid rgba(28,20,15,.14);
   font-family:var(--f-body);
   font-size:13.5px;
   font-weight:300;
   line-height:1.4;
 }
-.steps li:last-child{border-bottom:1px solid rgba(247,239,228,.18);}
+.steps li:last-child{border-bottom:1px solid rgba(28,20,15,.14);}
 .steps .num{
   font-family:var(--f-mono);
   font-size:8px;
@@ -347,7 +347,7 @@ body{
   margin:24px 0 0;
   background:none;border:0;padding:0;
   font-family:var(--f-mono);font-size:8px;text-transform:uppercase;letter-spacing:.18em;
-  color:rgba(247,239,228,.34);cursor:pointer;text-align:left;
+  color:var(--grey);cursor:pointer;text-align:left;
 }
 
 /* ─────────── листы поверх экранов: вещь, вход, первый образ ─────────── */
@@ -572,7 +572,7 @@ body{
 
 
 /* тёмная плашка возвращается: ритм светлое — тёмное — светлое */
-#s-wardrobe .slab .mono{color:var(--accent);}
+#s-wardrobe .slab .mono{color:var(--grey);}
 
 
 /* ─────────── экран открытия ─────────── */
@@ -1225,14 +1225,15 @@ body{
     if (n === 0)   return ['Добавь первые три вещи', 'снимай как получится · 0 из ' + LIMIT];
     if (n < WOW)   return ['Ещё ' + (WOW - n) + (WOW - n === 1 ? ' вещь' : ' вещи') + ' — и соберём первый образ',
                            n + ' из ' + LIMIT];
-    if (n < LIMIT) return ['Добавить ещё вещь', 'до утренних подборок: ' + (LIMIT - n)];
-    return ['Добавить ещё вещь', 'шкаф собран · ' + n + ' из ' + LIMIT];
+    if (n < LIMIT) return ['Нажми, чтобы добавить', 'до утренних подборок: ' + (LIMIT - n)];
+    return ['Нажми, чтобы добавить', 'шкаф собран · ' + n + ' из ' + LIMIT];
   }
 
   function paintWardrobe(){
     var n = items.length;
     var g = guidance(n);
     dropLead.textContent = g[0];
+    dropLead.classList.toggle('dim', n >= WOW);
     dropSub.textContent  = g[1];
     bar.style.width = Math.min(100, n / LIMIT * 100) + '%';
     track.setAttribute('aria-valuenow', String(n));
