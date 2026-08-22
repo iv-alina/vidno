@@ -645,23 +645,22 @@ body{
   display:block;
   overflow:hidden;
 }
-.m-cell img{width:100%;height:100%;object-fit:cover;display:block;}
-/* рамок нет: границы блока держит светлый ореол по краю,
-   а подпись читается по мягкому затемнению снизу */
+.m-cell img{width:100%;height:100%;object-fit:contain;padding:16px 16px 46px;display:block;}
+/* рамок нет: границу блока держит еле заметный светлый ореол по краю */
 .m-cell::after{
   content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(180deg, rgba(28,20,15,0) 58%, rgba(28,20,15,.46) 100%),
-    linear-gradient(180deg, rgba(251,247,241,.30) 0, rgba(251,247,241,0) 16px),
-    linear-gradient(90deg,  rgba(251,247,241,.30) 0, rgba(251,247,241,0) 16px),
-    linear-gradient(270deg, rgba(251,247,241,.30) 0, rgba(251,247,241,0) 16px);
+    linear-gradient(180deg, rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px),
+    linear-gradient(0deg,   rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px),
+    linear-gradient(90deg,  rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px),
+    linear-gradient(270deg, rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px);
 }
 .m-cap{
   position:absolute;
-  left:14px;right:14px;bottom:13px;
+  left:16px;right:16px;bottom:14px;
   z-index:1;
   display:flex;
   flex-direction:column;
@@ -670,14 +669,50 @@ body{
 .m-name{
   font-family:var(--f-body);
   font-size:13px;
-  font-weight:400;
+  font-weight:300;
   line-height:1.2;
-  color:var(--paper);
+  color:var(--ink);
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.m-cap .mono{color:rgba(247,239,228,.74);}
+
+/* убрать вещь: тихий крестик, видимая цель нажатия 40 px */
+.m-del{
+  position:absolute;top:2px;right:2px;z-index:2;
+  width:40px;height:40px;
+  border:0;background:none;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.m-del i{
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(251,247,241,.80);
+  color:rgba(28,20,15,.55);
+  font-family:var(--f-body);font-size:15px;font-style:normal;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.m-del:active i{background:var(--accent);color:var(--paper);}
+.m-del:focus-visible{outline:1px solid var(--accent);outline-offset:-4px;}
+
+/* полоса отмены удаления */
+.undo{
+  position:absolute;
+  left:20px;right:20px;
+  bottom:calc(56px + 16px + env(safe-area-inset-bottom,0px));
+  z-index:5;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:15px 18px;
+  background:var(--ink);
+  color:var(--paper);
+}
+.undo .mono{color:var(--paper);}
+.undo-btn{
+  background:none;border:0;
+  padding:10px 2px;margin:-10px 0;
+  color:var(--accent);cursor:pointer;
+  font-family:var(--f-mono);font-size:8px;text-transform:uppercase;letter-spacing:.18em;
+}
 
 .wr-empty{padding:34px 20px 130px;}
 .wr-empty p{margin:0 0 22px;font-family:var(--f-body);font-size:15px;font-weight:300;line-height:1.45;color:var(--grey);}
@@ -703,6 +738,172 @@ body{
 
 /* кнопка «в гардероб» под лентой добавленных вещей */
 .shelf-foot{padding:20px 20px 0;}
+
+
+/* ─────────── главная «Сегодня» · блок E ─────────── */
+/* блоки не сжимаются по высоте — экран прокручивается */
+
+#s-today > *{flex:0 0 auto;}
+
+.today-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 20px 18px;
+}
+.today-me{display:flex;align-items:center;gap:12px;}
+.avatar{
+  width:30px;height:30px;
+  border-radius:50%;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--ink);
+}
+
+/* фотография сезона во всю ширину */
+.hero{position:relative;height:250px;overflow:hidden;background:var(--ink);}
+.hero-pic{position:absolute;inset:0;background:var(--ink) center/cover no-repeat;}
+.hero-grain{position:absolute;inset:-20%;opacity:.06;}
+.hero-veil{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(28,20,15,.46) 0%, rgba(28,20,15,.14) 34%, rgba(28,20,15,.66) 100%);
+}
+.hero-tag{position:absolute;top:16px;z-index:2;color:var(--paper);}
+.hero-tag--l{left:20px;}
+.hero-tag--r{right:20px;}
+.hero-title{
+  position:absolute;
+  left:20px;right:20px;
+  bottom:-6px;                  /* нижняя восьмая букв уходит за край и обрезается */
+  z-index:2;
+  margin:0;
+  font-family:var(--f-title);
+  font-weight:400;
+  font-size:30px;
+  line-height:1.04;
+  color:var(--paper);
+}
+.hero-title em{
+  display:block;
+  font-family:var(--f-accent);
+  font-style:italic;
+  font-weight:400;
+  font-size:82px;
+  line-height:.9;
+  letter-spacing:-.02em;
+}
+
+/* погода */
+.wx{padding:26px 20px 0;}
+.wx-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+.wx-rule{height:1px;background:var(--ink);opacity:.85;margin:12px 0 16px;}
+.wx-lines{min-height:58px;}
+.wx-line{
+  margin:0;
+  font-family:var(--f-mono);
+  font-size:10.5px;
+  line-height:1.78;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  color:var(--ink);
+  min-height:19px;
+}
+.caret{
+  display:inline-block;
+  width:6px;height:11px;
+  background:var(--accent);
+  margin-left:5px;
+  vertical-align:-1px;
+}
+@media (prefers-reduced-motion:no-preference){
+  .caret{animation:blink 1.05s steps(1,end) infinite;}
+  @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+}
+
+/* ленты образов и идей */
+.rail-block{padding:34px 0 0;}
+.rail-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 20px;}
+.rail-title{font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.1;margin:0;}
+.rail-sub{padding:0 20px;margin:7px 0 0;}
+.rail{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:16px 20px 0;
+  scroll-snap-type:x proximity;
+  scroll-padding:0 20px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.rail::-webkit-scrollbar{display:none;}
+.rail::after{content:"";flex:0 0 13px;}
+.rail[hidden]{display:none;}
+
+.look-card{
+  position:relative;
+  flex:0 0 132px;
+  height:216px;
+  margin:0;
+  padding:14px 14px 34px;
+  border:0;
+  background:var(--bg2);
+  display:grid;
+  grid-template-columns:1.4fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:3px;
+  overflow:hidden;
+  scroll-snap-align:start;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.look-card--big{flex:0 0 172px;}
+.look-card figure{margin:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.look-card figure:first-child{grid-row:1 / span 2;}
+.look-card img{max-width:94%;max-height:94%;object-fit:contain;display:block;}
+.look-card .tag{position:absolute;left:14px;bottom:12px;color:var(--grey);}
+.look-card:focus-visible{outline:1px solid var(--accent);outline-offset:-3px;}
+
+.rail-empty{padding:16px 20px 0;}
+
+/* идеи */
+.rail-block.ideas{margin-top:36px;border-top:2px solid var(--accent);padding-top:26px;}
+.idea-card{
+  position:relative;
+  flex:0 0 148px;
+  height:196px;
+  overflow:hidden;
+  scroll-snap-align:start;
+  background:
+    repeating-linear-gradient(58deg, rgba(28,20,15,.075) 0 1px, rgba(28,20,15,0) 1px 13px),
+    var(--bg2);
+}
+.idea-card.ink{
+  color:var(--paper);
+  background:
+    repeating-linear-gradient(58deg, rgba(247,239,228,.11) 0 1px, rgba(247,239,228,0) 1px 13px),
+    var(--ink);
+}
+.idea-word{
+  position:absolute;left:14px;right:14px;top:15px;
+  margin:0;
+  font-family:var(--f-title);
+  font-weight:400;
+  font-size:17px;
+  line-height:1.14;
+}
+.idea-num{position:absolute;left:14px;bottom:12px;color:var(--grey);}
+.idea-card.ink .idea-num{color:#A89683;}
+
+.ideas-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 20px 44px;
+}
 
 /* ─────────── экран открытия ─────────── */
 /*
@@ -972,26 +1173,58 @@ body{
   <!-- ЭКРАНЫ РАЗДЕЛОВ -->
   <div class="stage" id="stage">
 
-    <!-- СЕГОДНЯ -->
+    <!-- СЕГОДНЯ · блок E -->
     <section class="screen is-on" id="s-today" role="tabpanel" aria-labelledby="t-today">
       <div class="statusbar"></div>
-      <div class="scr-head">
-        <span class="mono">VIDNO</span>
-        <span class="mono grey">[ сегодня ]</span>
-      </div>
-      <h1 class="title">Здесь будет<em>сегодня</em></h1>
-      <p class="mono accent eyebrow">блок E · главная</p>
 
-      <div class="stub">
-        <p class="mono grey">[ каркас ]</p>
-        <ul class="plan">
-          <li><span class="num">01</span><span>Фотография сезона во всю ширину</span></li>
-          <li><span class="num">02</span><span>Погода и три строки совета</span></li>
-          <li><span class="num">03</span><span>Твои образы <span class="count">( 0 )</span></span></li>
-          <li><span class="num">04</span><span>Идеи <span class="count">( 0 )</span></span></li>
-        </ul>
-        <p class="mono grey stub-foot">экран собирается</p>
+      <div class="today-head">
+        <span class="mono">VIDNO</span>
+        <span class="today-me">
+          <span class="mono grey">Пятница</span>
+          <span class="avatar" aria-hidden="true">А</span>
+        </span>
       </div>
+
+      <div class="hero">
+        <div class="hero-pic" id="hero-pic"></div>
+        <svg class="hero-grain" aria-hidden="true"><filter id="grain-hero"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#grain-hero)"/></svg>
+        <div class="hero-veil" aria-hidden="true"></div>
+        <span class="mono hero-tag hero-tag--l">[ 04.09 · осень ]</span>
+        <span class="mono hero-tag hero-tag--r">+7°</span>
+        <h1 class="hero-title">Осень любит<em>слои</em></h1>
+      </div>
+
+      <section class="wx">
+        <div class="wx-head">
+          <span class="mono accent">[ погода ]</span>
+          <span class="mono grey">утром 5 · днём 12</span>
+        </div>
+        <div class="wx-rule"></div>
+        <div class="wx-lines" id="wx-lines"></div>
+      </section>
+
+      <section class="rail-block">
+        <div class="rail-head">
+          <h2 class="rail-title">Твои образы</h2>
+          <span class="count" id="looks-count">( 0 )</span>
+        </div>
+        <p class="mono grey rail-sub">Собрано из твоего гардероба</p>
+        <div class="rail" id="looks-rail"></div>
+        <p class="mono grey rail-empty" id="looks-empty" hidden>Собери три вещи — здесь появится первый образ</p>
+      </section>
+
+      <section class="rail-block ideas">
+        <div class="rail-head">
+          <h2 class="rail-title">Идеи</h2>
+          <span class="count">( 24 )</span>
+        </div>
+        <p class="mono grey rail-sub">Так носят этой осенью</p>
+        <div class="rail" id="ideas-rail"></div>
+        <div class="ideas-foot">
+          <span class="mono grey">142 собрали похожий образ</span>
+          <button class="pill--line" type="button" id="all-ideas">Все идеи</button>
+        </div>
+      </section>
     </section>
 
     <!-- ГАРДЕРОБ · мозаика, блок H -->
@@ -1113,6 +1346,12 @@ body{
 
   </div>
 
+
+  <!-- отмена удаления -->
+  <div class="undo" id="undo" hidden role="status">
+    <span class="mono">Вещь убрана</span>
+    <button class="undo-btn" type="button" id="undo-btn">Вернуть</button>
+  </div>
 
   <!-- круглая кнопка «добавить вещь» · только на мозаике -->
   <button class="fab" type="button" id="wr-add" aria-label="Добавить вещь" hidden>
@@ -1247,6 +1486,7 @@ body{
       tab.tabIndex = sel ? 0 : -1;
     });
     fab.hidden = id !== 's-wardrobe';
+    if (id === 's-today') paintWeather();
     stage.scrollTop = 0;
   }
 
@@ -1436,6 +1676,7 @@ body{
     if (n) thumbs.scrollLeft = thumbs.scrollWidth;
     buildChip.textContent = n ? '[ собираем шкаф ]' : '[ первый день ]';
     paintMosaic();
+    paintToday();
   }
 
   // ═══════════ гардероб мозаикой · блок H ═══════════
@@ -1452,6 +1693,7 @@ body{
   function paintCats(){
     var used = [];
     items.forEach(function(it){ if (used.indexOf(it.cat) < 0) used.push(it.cat); });
+    used.sort(function(a, b){ return CATS.indexOf(a) - CATS.indexOf(b); });   // порядок пилюль не скачет
     if (filter !== 'Всё' && used.indexOf(filter) < 0) filter = 'Всё';
     wrCats.innerHTML = '';
     ['Всё'].concat(used).forEach(function(c){
@@ -1487,13 +1729,47 @@ body{
       nm.className = 'm-name';
       nm.textContent = it.name;
       var mt = document.createElement('span');
-      mt.className = 'mono';
+      mt.className = 'mono grey';
       mt.textContent = '2026 · ещё не носила';
       cap.appendChild(nm); cap.appendChild(mt);
       cell.appendChild(cap);
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'm-del';
+      del.setAttribute('aria-label', 'Убрать вещь: ' + it.name);
+      del.innerHTML = '<i aria-hidden="true">\u00d7</i>';
+      (function(item){
+        del.addEventListener('click', function(e){ e.stopPropagation(); removeItem(item); });
+      })(it);
+      cell.appendChild(del);
       mosaic.appendChild(cell);
     });
   }
+
+  // ─── убрать вещь, с возможностью вернуть ───
+  var undoBar   = document.getElementById('undo');
+  var undoTimer = null;
+  var removed   = null;
+
+  function removeItem(item){
+    var i = items.indexOf(item);
+    if (i < 0) return;
+    removed = {item: item, at: i};
+    items.splice(i, 1);
+    paintWardrobe();
+    undoBar.hidden = false;
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(function(){ undoBar.hidden = true; removed = null; }, 5200);
+  }
+
+  document.getElementById('undo-btn').addEventListener('click', function(){
+    if (!removed) return;
+    items.splice(Math.min(removed.at, items.length), 0, removed.item);
+    removed = null;
+    clearTimeout(undoTimer);
+    undoBar.hidden = true;
+    paintWardrobe();
+  });
 
   // переходы между мозаикой и сборкой
   fab.addEventListener('click', function(){ show('s-build'); });
@@ -1622,6 +1898,129 @@ body{
     openSheet(shLook);
     flags.onboarded = true;
     remember();
+  }
+
+
+  // ═══════════ главная «Сегодня» · блок E ═══════════
+
+  var heroPic   = document.getElementById('hero-pic');
+  var wxBox     = document.getElementById('wx-lines');
+  var looksRail = document.getElementById('looks-rail');
+  var looksCnt  = document.getElementById('looks-count');
+  var looksNone = document.getElementById('looks-empty');
+  var ideasRail = document.getElementById('ideas-rail');
+
+  var WX = ['Дождь до вечера.', 'Утром пять, днём двенадцать.', 'Ветер. Шарф не будет лишним.'];
+  var OCCASIONS = ['первый образ', 'на учёбу', 'вечер', 'прогулка', 'выходной'];
+  var IDEAS = [
+    'Тёплое поверх гладкого',
+    'Мех и бордо',
+    'Слой на слой',
+    'Прямое и мягкое',
+    'Шарф вместо слов'
+  ];
+
+  // ─── погода печатается по строке, один раз в день ───
+  var wxTimer = null;
+
+  function stamp(){
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  function paintWeather(){
+    clearTimeout(wxTimer);
+    wxBox.innerHTML = '';
+    var lines = WX.map(function(){
+      var el = document.createElement('p');
+      el.className = 'wx-line';
+      wxBox.appendChild(el);
+      return el;
+    });
+    var caret = document.createElement('span');
+    caret.className = 'caret';
+
+    if (flags.wxDay === stamp() || still()){        // сегодня уже печатали — показываем сразу
+      lines.forEach(function(el, i){ el.textContent = WX[i]; });
+      lines[lines.length - 1].appendChild(caret);
+      return;
+    }
+
+    flags.wxDay = stamp();
+    remember();
+
+    var li = 0, ci = 0;
+    lines[0].appendChild(caret);
+    (function tick(){
+      if (li >= WX.length) return;
+      var text = WX[li];
+      if (ci < text.length){
+        ci++;
+        lines[li].textContent = text.slice(0, ci);
+        lines[li].appendChild(caret);
+        wxTimer = setTimeout(tick, 26);
+        return;
+      }
+      li++; ci = 0;
+      if (li < WX.length){
+        lines[li].appendChild(caret);
+        wxTimer = setTimeout(tick, 460);            // пауза между строками
+      }
+    })();
+  }
+
+  // ─── образы: витрина из загруженных вещей, а не логика сочетаний ───
+  function looksFrom(list){
+    var out = [];
+    for (var i = 0; i + WOW <= list.length && out.length < 5; i++){
+      out.push({ things: list.slice(i, i + WOW), tag: OCCASIONS[out.length] });
+    }
+    return out;
+  }
+
+  function paintToday(){
+    heroPic.style.backgroundImage = items.length
+      ? 'url("' + items[items.length - 1].src + '")'
+      : 'none';
+
+    var looks = looksFrom(items);
+    looksCnt.textContent = '( ' + looks.length + ' )';
+    looksNone.hidden = looks.length > 0;
+    looksRail.hidden = looks.length === 0;
+    looksRail.innerHTML = '';
+    looks.forEach(function(lk, i){
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'look-card' + (i === 0 ? ' look-card--big' : '');
+      lk.things.forEach(function(it){
+        var f = document.createElement('figure');
+        var im = document.createElement('img');
+        im.src = it.src; im.alt = it.name;
+        f.appendChild(im);
+        card.appendChild(f);
+      });
+      var tg = document.createElement('span');
+      tg.className = 'mono tag';
+      tg.textContent = lk.tag;
+      card.appendChild(tg);
+      card.addEventListener('click', showLook);
+      looksRail.appendChild(card);
+    });
+
+    if (ideasRail.childElementCount === 0){
+      IDEAS.forEach(function(word, i){
+        var card = document.createElement('article');
+        card.className = 'idea-card' + (i % 2 ? ' ink' : '');
+        var h = document.createElement('p');
+        h.className = 'idea-word';
+        h.textContent = word;
+        var n = document.createElement('span');
+        n.className = 'mono idea-num';
+        n.textContent = '0' + (i + 1) + ' / 24';
+        card.appendChild(h); card.appendChild(n);
+        ideasRail.appendChild(card);
+      });
+    }
   }
 
   // ─── общее для листов ───
