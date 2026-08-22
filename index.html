@@ -1,0 +1,1400 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>VIDNO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta name="theme-color" content="#EFE8DC">
+<!-- полноэкранный режим при добавлении на экран «Домой» -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="VIDNO">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<title>VIDNO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@300&display=swap">
+
+</head>
+<body>
+<style>
+:root{
+  --bg:#FBF7F1;
+  --bg2:#F2E9DD;
+  --ink:#1C140F;
+  --accent:#BE3A24;
+  --grey:#8A7867;
+  --line:#E2D6C6;
+  --paper:#F7EFE4;
+  --studio:#EFE8DC;      /* дым — поле экрана «Первый день» */
+
+  --f-title:"Prata",Georgia,"Times New Roman",serif;
+  --f-accent:"Playfair Display",Georgia,"Times New Roman",serif;
+  --f-body:"Onest","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --f-logo:"Unbounded","Onest",Arial,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+
+[hidden]{display:none !important;}
+
+html,body{height:100%;}
+body{
+  margin:0;
+  height:100%;
+  overflow:hidden;              /* прокручивается только содержимое экрана */
+  overscroll-behavior:none;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--f-body);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ─────────── каркас телефона ─────────── */
+
+.phone{
+  width:100%;
+  max-width:480px;
+  margin:0 auto;
+  height:100%;                  /* без vh и dvh: панель никогда не уезжает за край */
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  overflow:hidden;
+  position:relative;
+}
+
+.stage{
+  flex:1 1 auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+
+.screen{
+  display:none;
+  min-height:100%;
+  flex-direction:column;
+  background:var(--bg);
+}
+.screen.is-on{display:flex;}
+
+@media (prefers-reduced-motion:no-preference){
+  .screen.is-on{animation:fade .13s linear;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+}
+
+/* пустые 64 px под системную строку */
+.statusbar{height:max(64px, calc(env(safe-area-inset-top, 0px) + 14px));flex:0 0 auto;}
+
+/* ─────────── типографика ─────────── */
+
+.mono{
+  font-family:var(--f-mono);
+  font-size:8px;
+  line-height:1.55;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-weight:400;
+  margin:0;
+}
+.mono.accent{color:var(--accent);}
+.mono.grey{color:var(--grey);}
+
+.scr-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 20px 26px;
+}
+
+.title{
+  font-family:var(--f-title);
+  font-weight:400;
+  font-size:30px;
+  line-height:1.06;
+  letter-spacing:-.01em;
+  margin:0;
+  padding:0 20px;
+  text-wrap:balance;
+}
+.title em{
+  display:block;
+  font-family:var(--f-accent);
+  font-style:italic;
+  font-weight:400;
+  font-size:64px;
+  line-height:.94;
+  letter-spacing:-.02em;
+  margin-top:2px;
+}
+
+.count{color:var(--accent);font-family:var(--f-body);font-size:15px;font-weight:400;}
+
+.eyebrow{padding:0 20px;margin:18px 0 0;}
+
+/* ─────────── плашка-заглушка ─────────── */
+
+.stub{
+  flex:1 1 auto;
+  margin:22px 0 0;
+  padding:26px 20px 30px;
+  background:var(--bg2);
+  border-top:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+
+
+.plan{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;}
+.plan li{
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  padding:13px 0;
+  border-top:1px solid var(--line);
+  font-family:var(--f-body);
+  font-size:15px;
+  font-weight:300;
+  line-height:1.3;
+}
+.plan li:last-child{border-bottom:1px solid var(--line);}
+.plan .num{
+  font-family:var(--f-mono);
+  font-size:8px;
+  letter-spacing:.18em;
+  color:var(--accent);
+  flex:0 0 auto;
+}
+
+.stub-foot{margin-top:auto;padding-top:8px;}
+
+/* ─────────── тёмный экран (связка) ─────────── */
+
+.screen.dark{background:var(--ink);color:var(--paper);}
+.screen.dark .stub{background:var(--ink);border-top-color:rgba(247,239,228,.16);}
+.screen.dark .plan li{border-top-color:rgba(247,239,228,.16);}
+.screen.dark .plan li:last-child{border-bottom-color:rgba(247,239,228,.16);}
+.screen.dark .mono.grey{color:#A89683;}
+.screen.dark .plan .num{color:#F0836A;}
+.screen.dark .count{color:#F0836A;}
+
+/* ─────────── нижняя панель ─────────── */
+
+.tabbar{
+  flex:0 0 auto;
+  min-height:56px;
+  display:flex;
+  background:var(--bg);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.tabbar.on-dark{background:var(--ink);border-top-color:rgba(247,239,228,.16);}
+
+.tab{
+  flex:1 1 0;
+  min-height:56px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  padding:12px 2px 14px;
+  background:none;
+  border:0;
+  border-radius:0;
+  cursor:pointer;
+  font:inherit;
+  color:var(--grey);
+  -webkit-tap-highlight-color:transparent;
+}
+.tab:focus-visible{outline:1px solid var(--accent);outline-offset:-3px;}
+
+.dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  border:1px solid var(--grey);
+  background:transparent;
+  flex:0 0 auto;
+}
+.tab[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);}
+
+.tab-label{
+  font-family:var(--f-mono);
+  font-size:7px;
+  line-height:1;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-weight:400;
+  color:var(--grey);
+}
+.tab[aria-selected="true"] .tab-label{color:var(--ink);}
+.tabbar.on-dark .tab[aria-selected="true"] .tab-label{color:var(--paper);}
+.tabbar.on-dark .tab-label{color:#A89683;}
+.tabbar.on-dark .dot{border-color:#A89683;}
+.tabbar.on-dark .tab[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);}
+
+/* ─────────── первый день · блок C ─────────── */
+
+.title--first em{font-size:78px;line-height:.92;}
+
+/* одна горизонтальная зона: и цель для перетаскивания, и кнопка, и инструкция */
+.drop{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:13px;
+  width:calc(100% - 40px);
+  margin:26px 20px 0;
+  min-height:176px;
+  padding:26px 20px;
+  border:1px dashed var(--accent);
+  border-radius:0;
+  background:none;
+  cursor:pointer;
+  text-align:center;
+  -webkit-tap-highlight-color:transparent;
+  box-shadow:0 0 26px rgba(190,58,36,.22), inset 0 0 26px rgba(190,58,36,.06);
+}
+.drop:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+.drop.over{background:rgba(190,58,36,.05);}
+
+.drop-lead{
+  font-family:var(--f-body);
+  font-size:17px;
+  font-weight:400;
+  line-height:1.25;
+  color:var(--ink);
+}
+.drop-sub{color:var(--grey);}
+
+.plus{position:relative;width:26px;height:26px;flex:0 0 auto;}
+.plus::before,.plus::after{content:"";position:absolute;background:var(--accent);}
+.plus::before{left:0;right:0;top:12px;height:1.5px;}
+.plus::after{top:0;bottom:0;left:12px;width:1.5px;}
+
+.progress{height:2px;background:var(--line);margin:14px 20px 0;}
+.progress span{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease;}
+
+/* добавленные вещи — мелко, лентой */
+.shelf{margin-top:30px;}
+.shelf[hidden]{display:none;}
+.shelf-head{padding:0 20px;color:var(--grey);}
+.shelf-head b{color:var(--accent);font-weight:400;}
+.thumbs{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:12px 20px 0;
+  scroll-snap-type:x proximity;
+  scroll-padding:0 20px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.thumbs::-webkit-scrollbar{display:none;}
+.thumb{
+  flex:0 0 84px;
+  height:112px;
+  background:var(--bg);
+  border:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  scroll-snap-align:start;
+  margin:0;
+}
+.thumb img{max-width:84%;max-height:84%;object-fit:contain;display:block;}
+
+.slab{
+  margin-top:auto;                /* футер прижат к низу экрана */
+  padding:30px 20px 34px;
+  background:var(--ink);
+  color:var(--paper);
+}
+
+.steps{margin:22px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;}
+.steps li{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+  padding:15px 0;
+  border-top:1px solid rgba(247,239,228,.18);
+  font-family:var(--f-body);
+  font-size:13.5px;
+  font-weight:300;
+  line-height:1.4;
+}
+.steps li:last-child{border-bottom:1px solid rgba(247,239,228,.18);}
+.steps .num{
+  font-family:var(--f-mono);
+  font-size:8px;
+  letter-spacing:.18em;
+  color:var(--accent);
+  flex:0 0 auto;
+}
+
+.reset{
+  margin:24px 0 0;
+  background:none;border:0;padding:0;
+  font-family:var(--f-mono);font-size:8px;text-transform:uppercase;letter-spacing:.18em;
+  color:rgba(247,239,228,.34);cursor:pointer;text-align:left;
+}
+
+/* ─────────── листы поверх экранов: вещь, вход, первый образ ─────────── */
+
+.sheet{
+  position:absolute;
+  inset:0;
+  z-index:6;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.sheet[hidden]{display:none !important;}
+@media (prefers-reduced-motion:no-preference){
+  .sheet:not([hidden]){animation:sheet-up .34s cubic-bezier(.22,.61,.36,1) both;}
+  @keyframes sheet-up{from{opacity:0;transform:translate3d(0,22px,0);}to{opacity:1;transform:none;}}
+}
+
+.sheet-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 20px 24px;
+}
+.round{
+  width:36px;height:36px;
+  border-radius:50%;
+  border:1px solid var(--line);
+  background:none;
+  color:var(--ink);
+  font:inherit;
+  font-size:15px;
+  line-height:1;
+  cursor:pointer;
+  flex:0 0 auto;
+  -webkit-tap-highlight-color:transparent;
+}
+.round:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
+.chip{
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:7px 14px;
+  font-family:var(--f-mono);
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  color:var(--grey);
+}
+
+/* ── новая вещь ── */
+
+.shot{
+  width:100%;
+  height:300px;
+  background:var(--bg2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.shot img{max-width:82%;max-height:82%;object-fit:contain;display:block;}
+
+.detect{padding:18px 20px 0;}
+.field{padding:22px 20px 0;}
+.field label{display:block;margin-bottom:9px;}
+.field input{
+  width:100%;
+  border:0;
+  border-bottom:1px solid var(--line);
+  border-radius:0;
+  background:none;
+  padding:8px 0;
+  font-family:var(--f-body);
+  font-size:19px;
+  font-weight:300;
+  color:var(--ink);
+}
+.field input:focus{outline:none;border-bottom-color:var(--accent);}
+
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}
+.pill{
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:none;
+  padding:9px 15px;
+  min-height:36px;
+  font-family:var(--f-body);
+  font-size:14px;
+  font-weight:300;
+  color:var(--ink);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+.pill:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
+
+.sheet-foot{margin-top:auto;padding:30px 20px 34px;}
+/* счётчик в листе новой вещи */
+.counter{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  font-family:var(--f-body);
+  font-size:13px;
+  font-weight:400;
+}
+.counter b{color:var(--accent);font-weight:400;}
+.counter i{color:var(--grey);font-style:normal;font-weight:300;}
+.sheet-foot .counter{padding:0;margin:0 0 13px;}
+.sheet-foot .progress{margin:0 0 22px;}
+
+/* ── вход ── */
+
+.auth-lead{padding:16px 20px 0;font-family:var(--f-body);font-size:15px;font-weight:300;line-height:1.45;color:var(--grey);}
+.auth-box{padding:32px 20px 0;display:flex;flex-direction:column;gap:10px;}
+.btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:52px;
+  border-radius:999px;
+  border:1px solid var(--ink);
+  background:none;
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:15px;
+  font-weight:400;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn--fill{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.btn--accent{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.or{display:flex;align-items:center;gap:14px;padding:26px 20px 0;}
+.or::before,.or::after{content:"";flex:1 1 auto;height:1px;background:var(--line);}
+
+/* ── первый образ ── */
+
+.look{
+  background:var(--bg2);
+  padding:26px 20px;
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:10px;
+  height:340px;
+}
+.look figure{margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.look figure:first-child{grid-row:1 / span 2;}
+.look img{max-width:84%;max-height:84%;object-fit:contain;display:block;}
+
+.look-body{padding:26px 20px 0;}
+.look-why{margin:16px 0 0;font-family:var(--f-body);font-size:15px;font-weight:300;line-height:1.45;color:var(--grey);}
+.look-list{margin:26px 0 0;padding:0;list-style:none;}
+.look-list li{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 0;
+  border-top:1px solid var(--line);
+  font-family:var(--f-body);
+  font-size:15px;
+  font-weight:300;
+}
+.look-list li:last-child{border-bottom:1px solid var(--line);}
+.look-list .num{font-family:var(--f-mono);font-size:8px;letter-spacing:.18em;color:var(--accent);margin-right:14px;flex:0 0 auto;}
+.look-list .nm{flex:1 1 auto;}
+
+/* ── служебная кнопка сброса, только на время тестов ── */
+.reset{
+  margin:26px 0 0;
+  background:none;border:0;padding:0;
+  font-family:var(--f-mono);font-size:8px;text-transform:uppercase;letter-spacing:.18em;
+  color:var(--grey);cursor:pointer;text-align:left;
+}
+
+/* ─────────── студийный фон · экран «Первый день» ─────────── */
+/* приём с плаката, вывернутый на светлое: плотное песочное поле,
+   зерно, виньетка, светящийся заголовок в цвет шрифта */
+
+#s-wardrobe{background:var(--studio);color:var(--ink);}
+
+.studio{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.studio-vig{
+  position:absolute;inset:0;
+  background:radial-gradient(122% 80% at 50% 32%, rgba(255,253,249,.92) 0%, rgba(255,253,249,0) 48%, rgba(28,20,15,.11) 100%);
+}
+.studio-grain{position:absolute;inset:-20%;opacity:.05;}
+.studio-line{position:absolute;inset:0;width:100%;height:100%;}
+.studio-line path{
+  fill:none;
+  stroke:rgba(28,20,15,.24);
+  stroke-width:1;
+  stroke-dasharray:3 7;
+  vector-effect:non-scaling-stroke;
+}
+@keyframes sweep{from{transform:translate(0,0);}to{transform:translate(-16px,22px);}}
+@media (prefers-reduced-motion:no-preference){
+  .studio-line path{animation:sweep 34s ease-in-out infinite alternate;}
+}
+
+#s-wardrobe > *:not(.studio){position:relative;z-index:1;}
+
+/* заголовок: алый со свечением в цвет шрифта */
+#s-wardrobe .title{color:var(--ink);}
+#s-wardrobe .title em{
+  color:var(--accent);
+  text-shadow:0 0 20px rgba(190,58,36,.42), 0 0 52px rgba(190,58,36,.20);
+}
+#s-wardrobe .scr-head .mono{color:var(--ink);}
+#s-wardrobe .scr-head .mono.grey{color:var(--grey);}
+
+
+
+
+
+/* тёмная плашка возвращается: ритм светлое — тёмное — светлое */
+#s-wardrobe .slab .mono{color:var(--accent);}
+
+
+/* ─────────── экран открытия ─────────── */
+/*
+   Хронометраж:
+   0,26 с — разом: верхняя панель, VIDNO, «Осень любит слои»,
+            падающие фразы и приглашение листать со стрелкой
+   1,70 с — «Ты не выбираешь погоду.»
+   2,70 с — «Гардероб выбирает.»
+   8,10 с — уходят только эти две строки, остальное остаётся навсегда
+*/
+
+.splash{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  background:var(--bg2);
+  display:flex;
+  flex-direction:column;
+  padding:0 20px 34px;
+  overflow:hidden;
+  cursor:grab;
+  touch-action:none;          /* палец тянет заставку, а не страницу */
+  -webkit-tap-highlight-color:transparent;
+  transition:opacity .34s ease-in, transform .58s cubic-bezier(.22,.61,.36,1);
+}
+.splash[hidden]{display:none;}
+.splash.is-leaving{opacity:0;transform:translate3d(0,-28px,0);pointer-events:none;}
+.splash:active{cursor:grabbing;}
+.splash.is-dragging{transition:none;}
+.splash:focus-visible{outline:1px solid var(--accent);outline-offset:-4px;}
+
+@keyframes appear{from{opacity:0;transform:translate3d(0,6px,0);}to{opacity:1;transform:none;}}
+@keyframes vanish{from{opacity:1;}to{opacity:0;}}
+@keyframes layer-in{from{opacity:0;}to{opacity:1;}}
+@keyframes breathe{0%,100%{opacity:1;}50%{opacity:.42;}}
+@keyframes nudge{0%,100%{transform:translate3d(0,-2px,0);}50%{transform:translate3d(0,3px,0);}}
+@keyframes rise{from{opacity:.3;transform:translate3d(0,16px,0);}to{opacity:1;transform:none;}}
+
+/* верхняя строка — как системная панель телефона */
+.statusstrip{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:16px;
+  opacity:0;
+}
+.statusstrip span{
+  font-family:var(--f-mono);
+  font-size:8px;
+  font-weight:400;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  line-height:1;
+  color:var(--grey);
+}
+
+.splash-top{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  margin-top:36px;
+}
+
+.logo{
+  font-family:var(--f-logo);
+  font-weight:300;
+  font-size:44px;
+  letter-spacing:.16em;
+  line-height:1;
+  color:var(--ink);
+  margin:0;
+  padding-left:.16em;
+  opacity:0;
+}
+
+.tagline{
+  width:100%;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:16px;
+}
+.tagline span{
+  opacity:0;
+  font-family:var(--f-mono);
+  font-size:8px;
+  font-weight:400;
+  letter-spacing:.18em;
+  line-height:1.55;
+  color:var(--ink);
+}
+.tagline span:last-child{text-align:right;}
+
+/* служебные строки того же кегля, что и падающие фразы: даём им сплошную
+   подложку цветом фона — фраза уходит за них, а не сквозь них */
+.statusstrip span,
+.tagline span,
+.hint-wrap{
+  background:var(--bg2);
+  outline:3px solid var(--bg2);   /* перекрывает, не сдвигая вёрстку */
+}
+.hint-wrap{width:fit-content;margin-left:auto;margin-right:auto;}
+
+/* ── падающий фоновый слой ── */
+
+.fall-layer{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:0;
+  /* фразы идут во всю высоту, мягко тают только у самых краёв экрана */
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 5%,#000 94%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 5%,#000 94%,transparent 100%);
+}
+.fall{
+  position:absolute;
+  top:0;
+  white-space:nowrap;
+  font-family:var(--f-mono);
+  font-size:8px;
+  font-weight:400;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  line-height:1.8;
+  color:rgba(28,20,15,.25);
+  will-change:transform;
+  animation-name:fall;
+  animation-duration:78s;          /* общий цикл: старт новой фразы каждые 3,9 с */
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+.fall-hot{color:rgba(190,58,36,.40);}
+
+/* одна скорость на всех — 39 с на экран. Разная скорость приводит к обгонам,
+   а двухстрочные фразы при обгоне слипаются в кашу */
+@keyframes fall{0%{transform:translate3d(0,-12vh,0);}50%{transform:translate3d(0,112vh,0);}100%{transform:translate3d(0,112vh,0);}}
+
+.splash-top,.splash-mid,.splash-foot,.statusstrip{position:relative;z-index:1;}
+.splash-mid{flex:1 1 auto;}
+
+/* ── нижний блок ── */
+
+.splash-foot{display:flex;flex-direction:column;}
+
+.opening-title{
+  font-family:var(--f-title);
+  font-weight:400;
+  font-size:60px;
+  line-height:1.02;
+  letter-spacing:-.015em;
+  color:var(--ink);
+  margin:0;
+  opacity:0;
+}
+.opening-title span{display:block;}
+
+.hint-wrap{
+  margin-top:36px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  opacity:0;
+}
+.hint-arrow{color:var(--grey);display:block;will-change:transform;}
+
+.hint{
+  margin:0;
+  text-align:center;
+  font-family:var(--f-mono);
+  font-size:8px;
+  font-weight:400;
+  letter-spacing:.18em;
+  line-height:1.55;
+  color:var(--grey);
+}
+
+/* ── хронометраж ── */
+
+@media (prefers-reduced-motion:no-preference){
+  /* всё, кроме двух боковых строк, появляется разом и больше не уходит */
+  .statusstrip,
+  .logo,
+  .opening-title{animation:appear .42s ease both .26s;}
+  .fall-layer   {animation:layer-in .5s ease both .26s;}
+  .hint-wrap    {animation:appear .42s ease both .26s, breathe 4.2s ease-in-out infinite .9s;}
+  .hint-arrow   {animation:nudge 2.6s ease-in-out infinite .9s;}
+
+  /* две боковые строки: одна за другой с секундной паузой, через пять секунд уходят */
+  .tagline span:first-child{animation:appear .42s ease both 1.7s, vanish .9s ease forwards 8.1s;}
+  .tagline span:last-child {animation:appear .42s ease both 2.7s, vanish .9s ease forwards 8.1s;}
+  .phone.is-entering .stage,
+  .phone.is-entering .tabbar{animation:rise .62s cubic-bezier(.22,.61,.36,1) both;}
+}
+
+/* без анимаций: экран сразу собран, три фразы стоят на месте */
+@media (prefers-reduced-motion:reduce){
+  .statusstrip,.logo,.opening-title,.hint-wrap,.fall-layer{opacity:1;}
+  .tagline span{opacity:0;}
+  .fall{animation:none;}
+  .fall:nth-child(4){transform:translate3d(0,32vh,0);}
+  .fall:nth-child(9){transform:translate3d(0,50vh,0);}
+  .fall:nth-child(15){transform:translate3d(0,68vh,0);}
+}
+
+.center{text-align:center;}
+</style>
+
+<div class="phone">
+
+  <!-- ЭКРАН ОТКРЫТИЯ · без нижней панели -->
+  <div class="splash" id="splash" tabindex="0" role="button" aria-label="Войти в приложение">
+    <div class="statusbar"></div>
+
+      <div class="fall-layer" aria-hidden="true">
+        <span class="fall" style="left:43.4px;animation-delay:-0.34s">Опять чёрное?<br>Ну ладно.</span>
+        <span class="fall" style="left:107.9px;animation-delay:-4.16s">Возьми зонт. Не бери зонт.<br>Возьми зонт.</span>
+        <span class="fall" style="left:132.0px;animation-delay:-7.72s">Шарф. Кашемир.<br>Дар прошлой зимы. Даритель забыт.</span>
+        <span class="fall" style="left:231.0px;animation-delay:-11.46s">Нет, тебе идёт.<br>Правда идёт. Иди уже.</span>
+        <span class="fall" style="left:47.8px;animation-delay:-15.61s">Ты правда это наденешь?<br>Ладно, наденешь.</span>
+        <span class="fall" style="left:59.5px;animation-delay:-19.40s">Ничего не подходит. Всё подходит.<br>Ничего не подходит.</span>
+        <span class="fall" style="left:79.9px;animation-delay:-23.68s">Платье. Шёлк.<br>Куплено на свадьбу. Свадьба была не твоя.</span>
+        <span class="fall" style="left:220.3px;animation-delay:-27.10s">Отлично выглядишь. Да.<br>Всё, хватит зеркала.</span>
+        <span class="fall" style="left:85.9px;animation-delay:-31.18s">Опять эти джинсы.<br>Ну а какие ещё.</span>
+        <span class="fall" style="left:111.4px;animation-delay:-35.18s">Всё, ухожу. Ещё раз посмотрю.<br>Всё, ухожу.</span>
+        <span class="fall" style="left:125.3px;animation-delay:-39.41s">Туфли. Замша. Надеты один раз.<br>Тот вечер того стоил.</span>
+        <span class="fall" style="left:241.0px;animation-delay:-42.90s">Тебе идёт. Всем идёт.<br>Пойдём уже.</span>
+        <span class="fall" style="left:32.0px;animation-delay:-46.58s">Ну и что, что не сочетается.<br>Сочетается.</span>
+        <span class="fall fall-hot" style="left:112.3px;animation-delay:-50.96s">Утром холодно. Днём жарко.<br>Утром холодно.</span>
+        <span class="fall" style="left:153.7px;animation-delay:-54.72s">Футболка. Хлопок. Чужая.<br>Возвращать уже поздно.</span>
+        <span class="fall" style="left:120.3px;animation-delay:-58.25s">Ты не опаздываешь. Ты уже опоздала.<br>Но выглядишь хорошо.</span>
+        <span class="fall" style="left:59.4px;animation-delay:-62.81s">Может, что-то поярче? Нет?<br>Ну нет так нет.</span>
+        <span class="fall fall-hot" style="left:75.0px;animation-delay:-66.78s">Обещали дождь. Не обещали дождь.<br>Обещали.</span>
+        <span class="fall fall-hot" style="left:175.3px;animation-delay:-70.51s">Похолодает. Не сегодня.<br>Но похолодает.</span>
+        <span class="fall" style="left:271.4px;animation-delay:-74.50s">Идёт. Не идёт.<br>Идёт.</span>
+      </div>
+
+    <div class="statusstrip">
+      <span>Пятница</span>
+      <span>04.09 · +7°</span>
+    </div>
+
+    <div class="splash-top">
+      <p class="logo">VIDNO</p>
+      <p class="tagline">
+        <span>Ты не выбираешь погоду.</span>
+        <span>Гардероб выбирает.</span>
+      </p>
+    </div>
+
+    <div class="splash-mid"></div>
+
+    <div class="splash-foot">
+      <h1 class="opening-title"><span>Осень</span><span>любит</span><span>слои</span></h1>
+          <div class="hint-wrap">
+        <p class="hint">Листай, чтобы войти</p>
+        <svg class="hint-arrow" width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true">
+          <path d="M6.5 0V16M6.5 16L1 10.5M6.5 16L12 10.5" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЭКРАНЫ РАЗДЕЛОВ -->
+  <div class="stage" id="stage">
+
+    <!-- СЕГОДНЯ -->
+    <section class="screen is-on" id="s-today" role="tabpanel" aria-labelledby="t-today">
+      <div class="statusbar"></div>
+      <div class="scr-head">
+        <span class="mono">VIDNO</span>
+        <span class="mono grey">[ сегодня ]</span>
+      </div>
+      <h1 class="title">Здесь будет<em>сегодня</em></h1>
+      <p class="mono accent eyebrow">блок E · главная</p>
+
+      <div class="stub">
+        <p class="mono grey">[ каркас ]</p>
+        <ul class="plan">
+          <li><span class="num">01</span><span>Фотография сезона во всю ширину</span></li>
+          <li><span class="num">02</span><span>Погода и три строки совета</span></li>
+          <li><span class="num">03</span><span>Твои образы <span class="count">( 0 )</span></span></li>
+          <li><span class="num">04</span><span>Идеи <span class="count">( 0 )</span></span></li>
+        </ul>
+        <p class="mono grey stub-foot">экран собирается</p>
+      </div>
+    </section>
+
+    <!-- ГАРДЕРОБ · первый день, блок C -->
+    <section class="screen" id="s-wardrobe" role="tabpanel" aria-labelledby="t-wardrobe" hidden>
+      <div class="studio" aria-hidden="true">
+        <div class="studio-vig"></div>
+        <svg class="studio-grain"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+        <svg class="studio-line" viewBox="0 0 390 900" preserveAspectRatio="none" focusable="false">
+          <path d="M-30 96 C 150 210, 340 250, 372 430 C 402 600, 210 640, 150 780 C 108 878, 150 930, 240 960"/>
+        </svg>
+      </div>
+      <div class="statusbar"></div>
+      <div class="scr-head">
+        <span class="mono">VIDNO</span>
+        <span class="mono grey">[ первый день ]</span>
+      </div>
+
+      <h1 class="title title--first">Здесь будет<em>твой шкаф</em></h1>
+
+      <button class="drop" type="button" id="drop">
+        <span class="plus" aria-hidden="true"></span>
+        <span class="drop-lead" id="drop-lead">Добавь первые три вещи</span>
+        <span class="mono drop-sub" id="drop-sub">снимай как получится · 0 из 15</span>
+      </button>
+
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="15" aria-valuenow="0" aria-label="Загружено вещей">
+        <span></span>
+      </div>
+
+      <section class="shelf" id="shelf" hidden>
+        <p class="mono shelf-head">В шкафу <b id="shelf-count">( 0 )</b></p>
+        <div class="thumbs" id="thumbs"></div>
+      </section>
+
+      <div class="slab">
+        <p class="mono">Что произойдёт</p>
+        <ol class="steps">
+          <li><span class="num">01</span><span>Фотографируешь вещи по одной</span></li>
+          <li><span class="num">02</span><span>На третьей вещи соберём первый образ</span></li>
+          <li><span class="num">03</span><span>На пятнадцатой начнутся утренние подборки</span></li>
+        </ol>
+        <button class="reset" type="button" id="reset">[ сброс · только для теста ]</button>
+      </div>
+
+      <input type="file" id="picker" accept="image/*" multiple hidden>
+    </section>
+
+    <!-- ИДЕИ -->
+    <section class="screen" id="s-ideas" role="tabpanel" aria-labelledby="t-ideas" hidden>
+      <div class="statusbar"></div>
+      <div class="scr-head">
+        <span class="mono">VIDNO</span>
+        <span class="mono grey">[ идеи ]</span>
+      </div>
+      <h1 class="title">Здесь будут<em>идеи</em></h1>
+      <p class="mono accent eyebrow">блок G · идея</p>
+
+      <div class="stub">
+        <p class="mono grey">[ каркас ]</p>
+        <ul class="plan">
+          <li><span class="num">01</span><span>Лента идей осени <span class="count">( 0 )</span></span></li>
+          <li><span class="num">02</span><span>Карточка идеи с фотографией</span></li>
+          <li><span class="num">03</span><span>Тёмная плашка «что перенять»</span></li>
+          <li><span class="num">04</span><span>Кнопка «Собрать из своего»</span></li>
+        </ul>
+        <p class="mono grey stub-foot">экран собирается</p>
+      </div>
+    </section>
+
+    <!-- СВЯЗКА -->
+    <section class="screen dark" id="s-charms" role="tabpanel" aria-labelledby="t-charms" hidden>
+      <div class="statusbar"></div>
+      <div class="scr-head">
+        <span class="mono">VIDNO</span>
+        <span class="mono grey">[ связка ]</span>
+      </div>
+      <h1 class="title">Здесь будет<em>связка</em></h1>
+      <p class="mono eyebrow" style="color:#F0836A">блок J · связка</p>
+
+      <div class="stub">
+        <p class="mono grey">[ каркас ]</p>
+        <ul class="plan">
+          <li><span class="num">01</span><span>Кольцо сезона — осень 2026</span></li>
+          <li><span class="num">02</span><span>Пять подвесок на нитях <span class="count">( 0 / 7 )</span></span></li>
+          <li><span class="num">03</span><span>Строка «ты и ещё …»</span></li>
+        </ul>
+        <p class="mono grey stub-foot">экран собирается</p>
+      </div>
+    </section>
+
+  </div>
+
+
+  <!-- ЛИСТ · НОВАЯ ВЕЩЬ (блок D, прототип) -->
+  <div class="sheet" id="sh-item" hidden role="dialog" aria-label="Новая вещь">
+    <div class="statusbar"></div>
+    <div class="sheet-head">
+      <button class="round" type="button" data-close="sh-item" aria-label="Закрыть">×</button>
+      <span class="chip">[ новая вещь ]</span>
+      <span style="width:36px"></span>
+    </div>
+
+    <div class="shot"><img id="shot-img" alt=""></div>
+
+    <div class="field">
+      <p class="mono grey">Категория</p>
+      <div class="pills" id="item-cats"></div>
+      <label class="mono grey" for="item-name" style="margin-top:26px">Название</label>
+      <input id="item-name" type="text" autocomplete="off" spellcheck="false" placeholder="Например: серый свитер">
+    </div>
+
+    <div class="sheet-foot">
+      <p class="counter"><b id="item-count">0 из 15</b><i id="item-left"></i></p>
+      <div class="progress"><span id="item-bar"></span></div>
+      <button class="btn btn--accent" type="button" id="item-save" disabled>Сохранить вещь</button>
+    </div>
+  </div>
+
+  <!-- ЛИСТ · ВХОД -->
+  <div class="sheet" id="sh-auth" hidden role="dialog" aria-label="Вход">
+    <div class="statusbar"></div>
+    <div class="sheet-head">
+      <span class="mono">VIDNO</span>
+      <span class="chip">[ вход ]</span>
+    </div>
+
+    <h1 class="title">Первый образ<em>собран</em></h1>
+    <p class="auth-lead">Войди, чтобы посмотреть его — и чтобы завтра утром пришла свежая подборка.</p>
+
+    <div class="auth-box">
+      <button class="btn btn--fill" type="button" data-auth="apple">Продолжить с Apple</button>
+      <button class="btn" type="button" data-auth="mail">Продолжить с Mail</button>
+    </div>
+
+    <p class="or"><span class="mono grey">или по почте</span></p>
+
+    <div class="field">
+      <label class="mono grey" for="auth-mail">Почта</label>
+      <input id="auth-mail" type="email" inputmode="email" autocomplete="email" placeholder="ты@почта.ру">
+    </div>
+
+    <div class="sheet-foot">
+      <button class="btn btn--accent" type="button" id="auth-link">Прислать ссылку для входа</button>
+      <p class="mono grey cta-note">Пароль не нужен — пришлём ссылку</p>
+    </div>
+  </div>
+
+  <!-- ЛИСТ · ПЕРВЫЙ ОБРАЗ (прототип блока F) -->
+  <div class="sheet" id="sh-look" hidden role="dialog" aria-label="Первый образ">
+    <div class="statusbar"></div>
+    <div class="sheet-head">
+      <button class="round" type="button" data-close="sh-look" aria-label="Закрыть">←</button>
+      <span class="chip">[ твой первый образ ]</span>
+      <span class="mono grey">01 / 01</span>
+    </div>
+
+    <div class="look" id="look-grid"></div>
+
+    <div class="look-body">
+      <p class="mono accent">Собрано из твоего гардероба · пятница</p>
+      <h1 class="title" style="padding:0;margin-top:12px">Тёплый верх,<em style="font-size:56px">прямой низ</em></h1>
+      <p class="look-why">Три вещи, которые ты сняла первыми, уже держатся вместе. Верх мягкий, низ прямой — этого достаточно, чтобы образ читался собранным.</p>
+      <ol class="look-list" id="look-list"></ol>
+    </div>
+
+    <div class="sheet-foot">
+      <button class="btn btn--accent" type="button" data-close="sh-look">Хорошо, дальше</button>
+      <p class="mono grey cta-note">На пятнадцатой вещи начнутся утренние подборки</p>
+    </div>
+  </div>
+
+  <!-- НИЖНЯЯ ПАНЕЛЬ -->
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Разделы" hidden>
+    <button class="tab" id="t-today" type="button" role="tab" aria-selected="true" aria-controls="s-today" data-screen="s-today">
+      <span class="dot" aria-hidden="true"></span><span class="tab-label">Сегодня</span>
+    </button>
+    <button class="tab" id="t-wardrobe" type="button" role="tab" aria-selected="false" aria-controls="s-wardrobe" data-screen="s-wardrobe">
+      <span class="dot" aria-hidden="true"></span><span class="tab-label">Гардероб</span>
+    </button>
+    <button class="tab" id="t-ideas" type="button" role="tab" aria-selected="false" aria-controls="s-ideas" data-screen="s-ideas">
+      <span class="dot" aria-hidden="true"></span><span class="tab-label">Идеи</span>
+    </button>
+    <button class="tab" id="t-charms" type="button" role="tab" aria-selected="false" aria-controls="s-charms" data-screen="s-charms">
+      <span class="dot" aria-hidden="true"></span><span class="tab-label">Связка</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function(){
+  var splash = document.getElementById('splash');
+  var tabbar = document.getElementById('tabbar');
+  var stage  = document.getElementById('stage');
+  var tabs   = Array.prototype.slice.call(tabbar.querySelectorAll('.tab'));
+
+  function show(id){
+    tabs.forEach(function(tab){
+      var on = tab.dataset.screen === id;
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.tabIndex = on ? 0 : -1;
+      var scr = document.getElementById(tab.dataset.screen);
+      scr.hidden = !on;
+      scr.classList.toggle('is-on', on);
+      if (on) tabbar.classList.toggle('on-dark', scr.classList.contains('dark'));
+    });
+    stage.scrollTop = 0;
+  }
+
+  tabs.forEach(function(tab, i){
+    tab.tabIndex = i === 0 ? 0 : -1;
+    tab.addEventListener('click', function(){ show(tab.dataset.screen); });
+    tab.addEventListener('keydown', function(e){
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var next = tabs[(i + d + tabs.length) % tabs.length];
+      show(next.dataset.screen);
+      next.focus();
+    });
+  });
+
+  var phone = document.querySelector('.phone');
+  var entered = false;
+  var still = function(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
+
+  var landed = 's-today';
+  function reveal(){
+    tabbar.hidden = false;      // нужный экран уже стоит слоем под заставкой
+    landed = route();
+    show(landed);
+  }
+  function finish(){
+    splash.hidden = true;
+    var t = document.querySelector('.tab[data-screen="' + landed + '"]');
+    if (t) t.focus({preventScroll:true});
+  }
+
+  // вход тапом, клавишей или колесом — заставка уезжает целиком
+  function enter(){
+    if (entered) return;
+    entered = true;
+    reveal();
+    if (still()){ finish(); return; }
+    splash.classList.add('is-leaving');
+    phone.classList.add('is-entering');
+    setTimeout(finish, 600);
+  }
+
+  // вход перетаскиванием — заставка продолжает движение пальца
+  function enterFromDrag(offset){
+    if (entered) return;
+    entered = true;
+    reveal();
+    if (still()){ finish(); return; }
+    var h = splash.offsetHeight + 60;
+    splash.classList.remove('is-dragging');
+    splash.style.transition = 'opacity .26s ease-in, transform .4s cubic-bezier(.22,.61,.36,1)';
+    splash.style.transform = 'translate3d(0,-' + h + 'px,0)';
+    splash.style.opacity = '0';
+    phone.classList.add('is-entering');
+    setTimeout(finish, 420);
+  }
+
+  // ─── жест: тянем, а не смахиваем ───
+  var drag = null;
+  var THRESHOLD = 0.26;   // протянуть больше четверти экрана
+  var FLICK = 0.9;        // либо резко: px/мс
+
+  function paint(px){
+    var h = splash.offsetHeight;
+    splash.style.transform = 'translate3d(0,' + (-px) + 'px,0)';
+    splash.style.opacity = String(1 - Math.min(1, px / (h * THRESHOLD)) * 0.6);
+  }
+  function snapBack(){
+    splash.classList.remove('is-dragging');
+    splash.style.transition = 'opacity .3s ease, transform .42s cubic-bezier(.22,1.1,.36,1)';
+    splash.style.transform = '';
+    splash.style.opacity = '';
+    setTimeout(function(){ splash.style.transition = ''; }, 440);
+  }
+
+  splash.addEventListener('pointerdown', function(e){
+    if (entered) return;
+    drag = {y: e.clientY, t: e.timeStamp, max: 0};
+    splash.classList.add('is-dragging');
+    try { splash.setPointerCapture(e.pointerId); } catch(_){}
+  });
+  splash.addEventListener('pointermove', function(e){
+    if (!drag || entered) return;
+    var dy = drag.y - e.clientY;                  // вверх — положительное
+    drag.max = Math.max(drag.max, Math.abs(dy));
+    paint(Math.max(0, dy > 0 ? dy : dy * 0.2));   // вниз — тугое сопротивление
+  });
+  function release(e){
+    if (!drag || entered) return;
+    var dy = drag.y - e.clientY;
+    var v  = dy / Math.max(1, e.timeStamp - drag.t);
+    var h  = splash.offsetHeight;
+    var wasDrag = drag.max > 6;
+    drag = null;
+    if (!wasDrag){ splash.classList.remove('is-dragging'); enter(); return; }  // это был тап
+    if (dy > h * THRESHOLD || v > FLICK) enterFromDrag();
+    else snapBack();
+  }
+  splash.addEventListener('pointerup', release);
+  splash.addEventListener('pointercancel', function(){ if (drag){ drag = null; snapBack(); } });
+
+  splash.addEventListener('keydown', function(e){
+    if (['Enter',' ','Spacebar','ArrowDown','ArrowUp','PageDown'].indexOf(e.key) > -1){
+      e.preventDefault();
+      enter();
+    }
+  });
+
+  // колесо мыши: копим прокрутку, одного щелчка мало
+  var wheel = 0, wheelTimer = null;
+  splash.addEventListener('wheel', function(e){
+    if (entered) return;
+    wheel += Math.max(0, e.deltaY);
+    paint(Math.min(wheel, splash.offsetHeight * THRESHOLD));
+    clearTimeout(wheelTimer);
+    if (wheel > splash.offsetHeight * THRESHOLD) enterFromDrag();
+    else wheelTimer = setTimeout(function(){ wheel = 0; snapBack(); }, 260);
+  }, {passive:true});
+  // ═══════════ состояние, маршрут и онбординг ═══════════
+
+  var LIMIT = 15, WOW = 3;                     // вау на третьей вещи, подборки с пятнадцатой
+  var CATS  = ['Верх','Низ','Обувь','Верхняя','Платье','Аксессуар'];
+
+  var items = [];                              // фото живут только в памяти
+  var flags = (function(){
+    try { return JSON.parse(localStorage.getItem('vidno') || '{}') || {}; }
+    catch(_){ return {}; }
+  })();
+  function remember(){
+    try { localStorage.setItem('vidno', JSON.stringify(flags)); } catch(_){}
+  }
+
+  // куда открывать приложение
+  function route(){
+    if (flags.onboarded) return 's-today';     // онбординг пройден — всегда главная
+    return items.length ? 's-today' : 's-wardrobe';
+  }
+
+  // ─── экран первого дня: слоты, счётчик, полоса ───
+  var fdTitle = document.querySelector('.title--first');
+  var bar     = document.querySelector('#s-wardrobe .progress span');
+  var track   = document.querySelector('#s-wardrobe .progress');
+
+  var drop     = document.getElementById('drop');
+  var dropLead = document.getElementById('drop-lead');
+  var dropSub  = document.getElementById('drop-sub');
+  var shelf    = document.getElementById('shelf');
+  var thumbs   = document.getElementById('thumbs');
+  var shelfCnt = document.getElementById('shelf-count');
+
+  // инструкция всегда говорит, что будет дальше
+  function guidance(n){
+    if (n === 0)   return ['Добавь первые три вещи', 'снимай как получится · 0 из ' + LIMIT];
+    if (n < WOW)   return ['Ещё ' + (WOW - n) + (WOW - n === 1 ? ' вещь' : ' вещи') + ' — и соберём первый образ',
+                           n + ' из ' + LIMIT];
+    if (n < LIMIT) return ['Добавить ещё вещь', 'до утренних подборок: ' + (LIMIT - n)];
+    return ['Добавить ещё вещь', 'шкаф собран · ' + n + ' из ' + LIMIT];
+  }
+
+  function paintWardrobe(){
+    var n = items.length;
+    var g = guidance(n);
+    dropLead.textContent = g[0];
+    dropSub.textContent  = g[1];
+    bar.style.width = Math.min(100, n / LIMIT * 100) + '%';
+    track.setAttribute('aria-valuenow', String(n));
+    fdTitle.firstChild.nodeValue = n ? 'Собирается' : 'Здесь будет';
+
+    shelf.hidden = n === 0;
+    shelfCnt.textContent = '( ' + n + ' )';
+    thumbs.innerHTML = '';
+    items.forEach(function(it){
+      var f = document.createElement('figure');
+      f.className = 'thumb';
+      var im = document.createElement('img');
+      im.src = it.src; im.alt = it.name;
+      f.appendChild(im);
+      thumbs.appendChild(f);
+    });
+    if (n) thumbs.scrollLeft = thumbs.scrollWidth;
+  }
+
+  // ─── выбор файлов ───
+  var picker = document.getElementById('picker');
+  var queue  = [];
+  function pick(){ picker.value = ''; picker.click(); }
+  drop.addEventListener('click', pick);
+  picker.addEventListener('change', function(){
+    queue = Array.prototype.slice.call(picker.files);
+    nextInQueue();
+  });
+
+  // перетаскивание файлов прямо в зону
+  ['dragenter','dragover'].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('over'); });
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('over'); });
+  });
+  drop.addEventListener('drop', function(e){
+    var fs = e.dataTransfer && e.dataTransfer.files;
+    if (!fs || !fs.length) return;
+    queue = Array.prototype.slice.call(fs).filter(function(f){ return /^image\//.test(f.type); });
+    nextInQueue();
+  });
+
+  // ─── лист новой вещи ───
+  var shItem   = document.getElementById('sh-item');
+  var shotImg  = document.getElementById('shot-img');
+  var nameIn   = document.getElementById('item-name');
+  var catsWrap = document.getElementById('item-cats');
+  var saveBtn  = document.getElementById('item-save');
+  var itemCnt  = document.getElementById('item-count');
+  var itemLeft = document.getElementById('item-left');
+  var itemBar  = document.getElementById('item-bar');
+  var draft    = null;
+
+  CATS.forEach(function(c){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'pill'; b.textContent = c;
+    b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){
+      catsWrap.querySelectorAll('.pill').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true');
+      if (draft) draft.cat = c;
+      saveBtn.disabled = false;
+    });
+    catsWrap.appendChild(b);
+  });
+
+  function nextInQueue(){
+    if (!queue.length) return;
+    var file = queue.shift();
+    var r = new FileReader();
+    r.onload = function(e){ openItem(e.target.result); };
+    r.readAsDataURL(file);
+  }
+
+  function openItem(src){
+    draft = {src: src, cat: '', name: ''};
+    shotImg.src = src;
+    nameIn.value = '';
+    catsWrap.querySelectorAll('.pill').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+    saveBtn.disabled = true;                       // пока не выбрана категория
+    itemCnt.textContent = items.length + ' из ' + LIMIT;
+    itemLeft.textContent = items.length < WOW
+      ? 'До первого образа: ' + (WOW - items.length)
+      : 'Осталось до подборок: ' + Math.max(0, LIMIT - items.length);
+    itemBar.style.width = Math.min(100, items.length / LIMIT * 100) + '%';
+    openSheet(shItem);
+  }
+
+  saveBtn.addEventListener('click', function(){
+    if (!draft) return;
+    draft.name = (nameIn.value.trim() || draft.cat);
+    items.push(draft);
+    draft = null;
+    closeSheet(shItem);
+    paintWardrobe();
+    if (queue.length){ setTimeout(nextInQueue, 260); return; }
+    if (items.length >= WOW && !flags.onboarded){
+      setTimeout(function(){ openSheet(shAuth); }, 320);   // образ есть, но сначала вход
+    }
+  });
+
+  // ─── вход ───
+  var shAuth = document.getElementById('sh-auth');
+  function signedIn(){
+    flags.registered = true;
+    remember();
+    closeSheet(shAuth);
+    setTimeout(showLook, 300);
+  }
+  shAuth.querySelectorAll('[data-auth]').forEach(function(b){ b.addEventListener('click', signedIn); });
+  document.getElementById('auth-link').addEventListener('click', function(){
+    var v = document.getElementById('auth-mail').value.trim();
+    if (!/.+@.+\..+/.test(v)){
+      document.getElementById('auth-mail').focus();
+      return;
+    }
+    signedIn();
+  });
+
+  // ─── первый образ ───
+  var shLook = document.getElementById('sh-look');
+  function showLook(){
+    var grid = document.getElementById('look-grid');
+    var list = document.getElementById('look-list');
+    grid.innerHTML = ''; list.innerHTML = '';
+    items.slice(0, 3).forEach(function(it, i){
+      var f = document.createElement('figure');
+      var im = document.createElement('img'); im.src = it.src; im.alt = it.name;
+      f.appendChild(im); grid.appendChild(f);
+      var li = document.createElement('li');
+      li.innerHTML = '<span class="num">0' + (i+1) + '</span><span class="nm"></span><span class="mono grey">' + it.cat + '</span>';
+      li.querySelector('.nm').textContent = it.name;
+      list.appendChild(li);
+    });
+    openSheet(shLook);
+    flags.onboarded = true;
+    remember();
+  }
+
+  // ─── общее для листов ───
+  function openSheet(el){ el.hidden = false; el.scrollTop = 0; }
+  function closeSheet(el){ el.hidden = true; }
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){
+      closeSheet(document.getElementById(b.dataset.close));
+      if (b.dataset.close === 'sh-look') show('s-today');
+    });
+  });
+
+  // ─── сброс на время тестов ───
+  document.getElementById('reset').addEventListener('click', function(){
+    items = []; flags = {}; remember();
+    try { localStorage.removeItem('vidno'); } catch(_){}
+    paintWardrobe();
+    show('s-wardrobe');
+  });
+
+  paintWardrobe();
+
+})();
+</script>
+
+</body>
+</html>
