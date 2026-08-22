@@ -535,7 +535,7 @@ body{
 /* приём с плаката, вывернутый на светлое: плотное песочное поле,
    зерно, виньетка, светящийся заголовок в цвет шрифта */
 
-#s-wardrobe{background:var(--studio);color:var(--ink);}
+#s-build{background:var(--studio);color:var(--ink);}
 
 .studio{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
 .studio-vig{
@@ -556,24 +556,136 @@ body{
   .studio-line path{animation:sweep 34s ease-in-out infinite alternate;}
 }
 
-#s-wardrobe > *:not(.studio){position:relative;z-index:1;}
+#s-build > *:not(.studio){position:relative;z-index:1;}
 
 /* заголовок: алый со свечением в цвет шрифта */
-#s-wardrobe .title{color:var(--ink);}
-#s-wardrobe .title em{
+#s-build .title{color:var(--ink);}
+#s-build .title em{
   color:var(--accent);
   text-shadow:0 0 20px rgba(190,58,36,.42), 0 0 52px rgba(190,58,36,.20);
 }
-#s-wardrobe .scr-head .mono{color:var(--ink);}
-#s-wardrobe .scr-head .mono.grey{color:var(--grey);}
+#s-build .scr-head .mono{color:var(--ink);}
+#s-build .scr-head .mono.grey{color:var(--grey);}
 
 
 
 
 
 /* тёмная плашка возвращается: ритм светлое — тёмное — светлое */
-#s-wardrobe .slab .mono{color:var(--grey);}
+#s-build .slab .mono{color:var(--grey);}
 
+
+
+/* ─────────── гардероб мозаикой · блок H ─────────── */
+
+.title--wr{display:flex;align-items:baseline;gap:12px;font-size:44px;line-height:1;}
+.title--wr .count{font-size:17px;}
+
+/* пилюли-категории */
+.cats{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding:24px 20px 0;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.cats::-webkit-scrollbar{display:none;}
+.cats::after{content:"";flex:0 0 8px;}
+.cat{
+  flex:0 0 auto;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:none;
+  padding:10px 16px;
+  min-height:36px;
+  font-family:var(--f-body);
+  font-size:14px;
+  font-weight:300;
+  color:var(--ink);
+  white-space:nowrap;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.cat.is-on{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.cat:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
+
+/* строка «фильтры · N из M» */
+.wr-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 0;}
+.pill--line{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--accent);
+  border-radius:999px;
+  background:none;
+  padding:9px 15px;
+  min-height:36px;
+  font-family:var(--f-body);
+  font-size:14px;
+  font-weight:300;
+  color:var(--accent);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.pill--line b{font-weight:400;}
+.pill--line:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
+.wr-note{padding:12px 20px 0;color:var(--grey);}
+
+/* мозаика: блоки разной высоты в два столбца */
+.mosaic{column-count:2;column-gap:2px;padding:20px 20px 136px;}
+.m-cell{
+  break-inside:avoid;
+  -webkit-column-break-inside:avoid;
+  page-break-inside:avoid;
+  margin:0 0 2px;
+  padding:16px;
+  background:var(--bg2);
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.m-cell.has-cap{padding-bottom:56px;}
+.m-cell img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+.m-cap{position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;gap:4px;}
+.m-name{
+  font-family:var(--f-body);
+  font-size:13px;
+  font-weight:300;
+  line-height:1.2;
+  color:var(--ink);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.wr-empty{padding:34px 20px 130px;}
+.wr-empty p{margin:0 0 22px;font-family:var(--f-body);font-size:15px;font-weight:300;line-height:1.45;color:var(--grey);}
+
+/* круглая алая кнопка «добавить вещь» */
+.fab{
+  position:absolute;
+  right:20px;
+  bottom:calc(56px + 20px + env(safe-area-inset-bottom,0px));
+  z-index:4;
+  width:56px;height:56px;
+  border:0;
+  border-radius:50%;
+  background:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.fab .plus::before,.fab .plus::after{background:var(--paper);}
+.fab:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+
+/* кнопка «в гардероб» под лентой добавленных вещей */
+.shelf-foot{padding:20px 20px 0;}
+.btn--line{border-color:var(--ink);color:var(--ink);background:none;min-height:48px;}
 
 /* ─────────── экран открытия ─────────── */
 /*
@@ -865,8 +977,34 @@ body{
       </div>
     </section>
 
-    <!-- ГАРДЕРОБ · первый день, блок C -->
+    <!-- ГАРДЕРОБ · мозаика, блок H -->
     <section class="screen" id="s-wardrobe" role="tabpanel" aria-labelledby="t-wardrobe" hidden>
+      <div class="statusbar"></div>
+      <div class="scr-head">
+        <span class="mono">VIDNO</span>
+        <span class="mono grey">[ архив ]</span>
+      </div>
+
+      <h1 class="title title--wr">Гардероб <span class="count" id="wr-count">( 0 )</span></h1>
+
+      <div class="cats" id="wr-cats" role="group" aria-label="Категории"></div>
+
+      <div class="wr-bar">
+        <button class="pill--line" type="button" id="wr-filters">Фильтры <b>( 0 )</b></button>
+        <span class="mono grey" id="wr-shown">0 из 0</span>
+      </div>
+      <p class="mono grey wr-note" id="wr-note" hidden>[ фильтры · блок I · собираем следующим ]</p>
+
+      <div class="mosaic" id="mosaic"></div>
+
+      <div class="wr-empty" id="wr-empty" hidden>
+        <p>Шкаф пока пуст. Сними первые вещи — на третьей соберём образ.</p>
+        <button class="btn btn--accent" type="button" id="wr-build">Собрать шкаф</button>
+      </div>
+    </section>
+
+    <!-- ГАРДЕРОБ · первый день, блок C -->
+    <section class="screen" id="s-build" role="tabpanel" aria-labelledby="t-wardrobe" hidden>
       <div class="studio" aria-hidden="true">
         <div class="studio-vig"></div>
         <svg class="studio-grain"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
@@ -877,7 +1015,7 @@ body{
       <div class="statusbar"></div>
       <div class="scr-head">
         <span class="mono">VIDNO</span>
-        <span class="mono grey">[ первый день ]</span>
+        <span class="mono grey" id="build-chip">[ первый день ]</span>
       </div>
 
       <h1 class="title title--first">Здесь будет<em>твой шкаф</em></h1>
@@ -895,6 +1033,9 @@ body{
       <section class="shelf" id="shelf" hidden>
         <p class="mono shelf-head">В шкафу <b id="shelf-count">( 0 )</b></p>
         <div class="thumbs" id="thumbs"></div>
+        <div class="shelf-foot">
+          <button class="btn btn--line" type="button" id="to-wardrobe">В гардероб</button>
+        </div>
       </section>
 
       <div class="slab">
@@ -955,6 +1096,11 @@ body{
 
   </div>
 
+
+  <!-- круглая кнопка «добавить вещь» · только на мозаике -->
+  <button class="fab" type="button" id="wr-add" aria-label="Добавить вещь" hidden>
+    <span class="plus" aria-hidden="true"></span>
+  </button>
 
   <!-- ЛИСТ · НОВАЯ ВЕЩЬ (блок D, прототип) -->
   <div class="sheet" id="sh-item" hidden role="dialog" aria-label="Новая вещь">
@@ -1059,28 +1205,47 @@ body{
   var stage  = document.getElementById('stage');
   var tabs   = Array.prototype.slice.call(tabbar.querySelectorAll('.tab'));
 
+  // экранов больше, чем вкладок: «Гардероб» держит два — мозаику и сборку
+  var screens = Array.prototype.slice.call(stage.querySelectorAll('.screen'));
+  var owner   = {
+    's-today':    't-today',
+    's-wardrobe': 't-wardrobe',
+    's-build':    't-wardrobe',
+    's-ideas':    't-ideas',
+    's-charms':   't-charms'
+  };
+  var fab = document.getElementById('wr-add');
+
   function show(id){
-    tabs.forEach(function(tab){
-      var on = tab.dataset.screen === id;
-      tab.setAttribute('aria-selected', on ? 'true' : 'false');
-      tab.tabIndex = on ? 0 : -1;
-      var scr = document.getElementById(tab.dataset.screen);
+    screens.forEach(function(scr){
+      var on = scr.id === id;
       scr.hidden = !on;
       scr.classList.toggle('is-on', on);
       if (on) tabbar.classList.toggle('on-dark', scr.classList.contains('dark'));
     });
+    var own = owner[id];
+    tabs.forEach(function(tab){
+      var sel = tab.id === own;
+      tab.setAttribute('aria-selected', sel ? 'true' : 'false');
+      tab.tabIndex = sel ? 0 : -1;
+    });
+    fab.hidden = id !== 's-wardrobe';
     stage.scrollTop = 0;
   }
 
+  // пустой шкаф открывается сборкой, непустой — мозаикой
+  function wardrobeEntry(){ return items.length ? 's-wardrobe' : 's-build'; }
+  function target(id){ return id === 's-wardrobe' ? wardrobeEntry() : id; }
+
   tabs.forEach(function(tab, i){
     tab.tabIndex = i === 0 ? 0 : -1;
-    tab.addEventListener('click', function(){ show(tab.dataset.screen); });
+    tab.addEventListener('click', function(){ show(target(tab.dataset.screen)); });
     tab.addEventListener('keydown', function(e){
       var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
       if (!d) return;
       e.preventDefault();
       var next = tabs[(i + d + tabs.length) % tabs.length];
-      show(next.dataset.screen);
+      show(target(next.dataset.screen));
       next.focus();
     });
   });
@@ -1205,13 +1370,13 @@ body{
   // куда открывать приложение
   function route(){
     if (flags.onboarded) return 's-today';     // онбординг пройден — всегда главная
-    return items.length ? 's-today' : 's-wardrobe';
+    return items.length ? 's-today' : 's-build';
   }
 
   // ─── экран первого дня: слоты, счётчик, полоса ───
   var fdTitle = document.querySelector('.title--first');
-  var bar     = document.querySelector('#s-wardrobe .progress span');
-  var track   = document.querySelector('#s-wardrobe .progress');
+  var bar     = document.querySelector('#s-build .progress span');
+  var track   = document.querySelector('#s-build .progress');
 
   var drop     = document.getElementById('drop');
   var dropLead = document.getElementById('drop-lead');
@@ -1219,6 +1384,7 @@ body{
   var shelf    = document.getElementById('shelf');
   var thumbs   = document.getElementById('thumbs');
   var shelfCnt = document.getElementById('shelf-count');
+  var buildChip = document.getElementById('build-chip');
 
   // инструкция всегда говорит, что будет дальше
   function guidance(n){
@@ -1251,7 +1417,77 @@ body{
       thumbs.appendChild(f);
     });
     if (n) thumbs.scrollLeft = thumbs.scrollWidth;
+    buildChip.textContent = n ? '[ собираем шкаф ]' : '[ первый день ]';
+    paintMosaic();
   }
+
+  // ═══════════ гардероб мозаикой · блок H ═══════════
+
+  var wrCount  = document.getElementById('wr-count');
+  var wrCats   = document.getElementById('wr-cats');
+  var wrShown  = document.getElementById('wr-shown');
+  var mosaic   = document.getElementById('mosaic');
+  var wrEmpty  = document.getElementById('wr-empty');
+  var wrNote   = document.getElementById('wr-note');
+  var HEIGHTS  = [232, 176, 198, 250, 184, 214];   // ритм блоков разной высоты
+  var filter   = 'Всё';
+
+  function paintCats(){
+    var used = [];
+    items.forEach(function(it){ if (used.indexOf(it.cat) < 0) used.push(it.cat); });
+    if (filter !== 'Всё' && used.indexOf(filter) < 0) filter = 'Всё';
+    wrCats.innerHTML = '';
+    ['Всё'].concat(used).forEach(function(c){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cat' + (c === filter ? ' is-on' : '');
+      b.textContent = c;
+      b.setAttribute('aria-pressed', c === filter ? 'true' : 'false');
+      b.addEventListener('click', function(){ filter = c; paintMosaic(); });
+      wrCats.appendChild(b);
+    });
+  }
+
+  function paintMosaic(){
+    paintCats();
+    var shown = items.filter(function(it){ return filter === 'Всё' || it.cat === filter; });
+    wrCount.textContent = '( ' + items.length + ' )';
+    wrShown.textContent = shown.length + ' из ' + items.length;
+    wrEmpty.hidden = items.length > 0;
+    mosaic.hidden   = items.length === 0;
+    mosaic.innerHTML = '';
+    shown.forEach(function(it, i){
+      var h = HEIGHTS[i % HEIGHTS.length];
+      var cell = document.createElement('figure');
+      cell.className = 'm-cell';
+      cell.style.height = h + 'px';
+      var im = document.createElement('img');
+      im.src = it.src; im.alt = it.name;
+      cell.appendChild(im);
+      if (h >= 210){                                  // подпись только на крупных блоках
+        cell.className = 'm-cell has-cap';
+        var cap = document.createElement('figcaption');
+        cap.className = 'm-cap';
+        var nm = document.createElement('span');
+        nm.className = 'm-name';
+        nm.textContent = it.name;
+        var mt = document.createElement('span');
+        mt.className = 'mono grey';
+        mt.textContent = '2026 · ещё не носила';
+        cap.appendChild(nm); cap.appendChild(mt);
+        cell.appendChild(cap);
+      }
+      mosaic.appendChild(cell);
+    });
+  }
+
+  // переходы между мозаикой и сборкой
+  fab.addEventListener('click', function(){ show('s-build'); });
+  document.getElementById('to-wardrobe').addEventListener('click', function(){ show('s-wardrobe'); });
+  document.getElementById('wr-build').addEventListener('click', function(){ show('s-build'); });
+  document.getElementById('wr-filters').addEventListener('click', function(){
+    wrNote.hidden = !wrNote.hidden;
+  });
 
   // ─── выбор файлов ───
   var picker = document.getElementById('picker');
@@ -1386,10 +1622,10 @@ body{
 
   // ─── сброс на время тестов ───
   document.getElementById('reset').addEventListener('click', function(){
-    items = []; flags = {}; remember();
+    items = []; flags = {}; filter = 'Всё'; remember();
     try { localStorage.removeItem('vidno'); } catch(_){}
     paintWardrobe();
-    show('s-wardrobe');
+    show('s-build');
   });
 
   paintWardrobe();
