@@ -5,7 +5,7 @@
 <title>VIDNO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<meta name="theme-color" content="#EFE8DC">
+<meta name="theme-color" content="#F2E9DD">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -28,7 +28,7 @@
   --grey:#8A7867;
   --line:#E2D6C6;
   --paper:#F7EFE4;
-  --studio:#EFE8DC;      /* дым — поле экрана «Первый день» */
+  --studio:#FBF7F1;      /* поле экрана сборки — тот же почти белый, что в гардеробе */
 
   --f-title:"Prata",Georgia,"Times New Roman",serif;
   --f-accent:"Playfair Display",Georgia,"Times New Roman",serif;
@@ -318,7 +318,7 @@ body{
 .slab{
   margin-top:auto;                /* футер прижат к низу экрана */
   padding:30px 20px 34px;
-  background:#E6DDCD;             /* на тон темнее поля, чтобы отделялась, но не спорила */
+  background:var(--bg2);          /* второй фон системы: на тон темнее поля, но не спорит */
   color:var(--ink);
 }
 
@@ -632,34 +632,52 @@ body{
 .pill--line:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
 .wr-note{padding:12px 20px 0;color:var(--grey);}
 
-/* мозаика: блоки разной высоты в два столбца */
-.mosaic{column-count:2;column-gap:2px;padding:20px 20px 136px;}
+/* мозаика: блоки разной высоты в два столбца, во всю ширину экрана */
+.mosaic{column-count:2;column-gap:0;padding:22px 0 136px;}
 .m-cell{
   break-inside:avoid;
   -webkit-column-break-inside:avoid;
   page-break-inside:avoid;
-  margin:0 0 2px;
-  padding:16px;
+  margin:0;
+  padding:0;
   background:var(--bg2);
   position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display:block;
   overflow:hidden;
 }
-.m-cell.has-cap{padding-bottom:56px;}
-.m-cell img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
-.m-cap{position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;gap:4px;}
+.m-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+/* рамок нет: границы блока держит светлый ореол по краю,
+   а подпись читается по мягкому затемнению снизу */
+.m-cell::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(28,20,15,0) 58%, rgba(28,20,15,.46) 100%),
+    linear-gradient(180deg, rgba(251,247,241,.30) 0, rgba(251,247,241,0) 16px),
+    linear-gradient(90deg,  rgba(251,247,241,.30) 0, rgba(251,247,241,0) 16px),
+    linear-gradient(270deg, rgba(251,247,241,.30) 0, rgba(251,247,241,0) 16px);
+}
+.m-cap{
+  position:absolute;
+  left:14px;right:14px;bottom:13px;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
 .m-name{
   font-family:var(--f-body);
   font-size:13px;
-  font-weight:300;
+  font-weight:400;
   line-height:1.2;
-  color:var(--ink);
+  color:var(--paper);
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+.m-cap .mono{color:rgba(247,239,228,.74);}
 
 .wr-empty{padding:34px 20px 130px;}
 .wr-empty p{margin:0 0 22px;font-family:var(--f-body);font-size:15px;font-weight:300;line-height:1.45;color:var(--grey);}
@@ -685,7 +703,6 @@ body{
 
 /* кнопка «в гардероб» под лентой добавленных вещей */
 .shelf-foot{padding:20px 20px 0;}
-.btn--line{border-color:var(--ink);color:var(--ink);background:none;min-height:48px;}
 
 /* ─────────── экран открытия ─────────── */
 /*
@@ -1034,7 +1051,7 @@ body{
         <p class="mono shelf-head">В шкафу <b id="shelf-count">( 0 )</b></p>
         <div class="thumbs" id="thumbs"></div>
         <div class="shelf-foot">
-          <button class="btn btn--line" type="button" id="to-wardrobe">В гардероб</button>
+          <button class="btn btn--accent" type="button" id="to-wardrobe">В гардероб</button>
         </div>
       </section>
 
@@ -1464,19 +1481,16 @@ body{
       var im = document.createElement('img');
       im.src = it.src; im.alt = it.name;
       cell.appendChild(im);
-      if (h >= 210){                                  // подпись только на крупных блоках
-        cell.className = 'm-cell has-cap';
-        var cap = document.createElement('figcaption');
-        cap.className = 'm-cap';
-        var nm = document.createElement('span');
-        nm.className = 'm-name';
-        nm.textContent = it.name;
-        var mt = document.createElement('span');
-        mt.className = 'mono grey';
-        mt.textContent = '2026 · ещё не носила';
-        cap.appendChild(nm); cap.appendChild(mt);
-        cell.appendChild(cap);
-      }
+      var cap = document.createElement('figcaption');       // подпись у каждой вещи
+      cap.className = 'm-cap';
+      var nm = document.createElement('span');
+      nm.className = 'm-name';
+      nm.textContent = it.name;
+      var mt = document.createElement('span');
+      mt.className = 'mono';
+      mt.textContent = '2026 · ещё не носила';
+      cap.appendChild(nm); cap.appendChild(mt);
+      cell.appendChild(cap);
       mosaic.appendChild(cell);
     });
   }
