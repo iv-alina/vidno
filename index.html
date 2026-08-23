@@ -501,7 +501,7 @@ body{
   gap:10px;
   height:340px;
 }
-.look figure{margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.look figure{margin:0;background:none;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .look figure:first-child{grid-row:1 / span 2;}
 .look img{max-width:84%;max-height:84%;object-fit:contain;display:block;}
 
@@ -530,6 +530,35 @@ body{
   font-family:var(--f-mono);font-size:8px;text-transform:uppercase;letter-spacing:.18em;
   color:var(--grey);cursor:pointer;text-align:left;
 }
+
+
+/* ─────────── карточка образа · блок F ─────────── */
+
+.look-title{
+  margin:12px 0 0;
+  font-family:var(--f-title);
+  font-weight:400;
+  font-size:30px;
+  line-height:1.06;
+  letter-spacing:-.01em;
+}
+.look-title em{
+  display:block;
+  font-family:var(--f-accent);
+  font-style:italic;
+  font-weight:400;
+  font-size:56px;
+  line-height:.94;
+  letter-spacing:-.02em;
+  margin-top:2px;
+}
+
+.round--lg{width:52px;height:52px;font-size:18px;}
+.round[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+
+.look-actions{display:flex;align-items:center;gap:9px;}
+.look-actions .btn{flex:1 1 auto;}
+.look-note{margin:14px 0 0;}
 
 /* ─────────── студийный фон · экран «Первый день» ─────────── */
 /* приём с плаката, вывернутый на светлое: плотное песочное поле,
@@ -1412,27 +1441,31 @@ body{
     </div>
   </div>
 
-  <!-- ЛИСТ · ПЕРВЫЙ ОБРАЗ (прототип блока F) -->
-  <div class="sheet" id="sh-look" hidden role="dialog" aria-label="Первый образ">
+  <!-- ЛИСТ · ТВОЙ ОБРАЗ · блок F -->
+  <div class="sheet" id="sh-look" hidden role="dialog" aria-label="Твой образ">
     <div class="statusbar"></div>
     <div class="sheet-head">
-      <button class="round" type="button" data-close="sh-look" aria-label="Закрыть">←</button>
-      <span class="chip">[ твой первый образ ]</span>
-      <span class="mono grey">01 / 01</span>
+      <button class="round" type="button" data-close="sh-look" aria-label="Назад">←</button>
+      <span class="chip">[ твои образы ]</span>
+      <span class="mono grey" id="look-num">01 / 01</span>
     </div>
 
     <div class="look" id="look-grid"></div>
 
     <div class="look-body">
-      <p class="mono accent">Собрано из твоего гардероба · пятница</p>
-      <h1 class="title" style="padding:0;margin-top:12px">Тёплый верх,<em style="font-size:56px">прямой низ</em></h1>
-      <p class="look-why">Три вещи, которые ты сняла первыми, уже держатся вместе. Верх мягкий, низ прямой — этого достаточно, чтобы образ читался собранным.</p>
+      <p class="mono accent" id="look-tag">Первый образ · пятница</p>
+      <h1 class="look-title" id="look-title"></h1>
+      <p class="look-why" id="look-why"></p>
       <ol class="look-list" id="look-list"></ol>
     </div>
 
     <div class="sheet-foot">
-      <button class="btn btn--accent" type="button" data-close="sh-look">Хорошо, дальше</button>
-      <p class="mono grey cta-note">На пятнадцатой вещи начнутся утренние подборки</p>
+      <div class="look-actions">
+        <button class="btn btn--accent" type="button" id="look-again">Собрать похожий</button>
+        <button class="round round--lg" type="button" id="look-heart" aria-pressed="false" aria-label="Нравится">&#9825;</button>
+        <button class="round round--lg" type="button" id="look-share" aria-label="Поделиться">&#8599;</button>
+      </div>
+      <p class="mono grey look-note" id="look-note" hidden></p>
     </div>
   </div>
 
@@ -1866,9 +1899,10 @@ body{
   var shAuth = document.getElementById('sh-auth');
   function signedIn(){
     flags.registered = true;
+    flags.onboarded  = true;
     remember();
     closeSheet(shAuth);
-    setTimeout(showLook, 300);
+    setTimeout(function(){ showLook(0); }, 300);
   }
   shAuth.querySelectorAll('[data-auth]').forEach(function(b){ b.addEventListener('click', signedIn); });
   document.getElementById('auth-link').addEventListener('click', function(){
@@ -1880,25 +1914,134 @@ body{
     signedIn();
   });
 
-  // ─── первый образ ───
-  var shLook = document.getElementById('sh-look');
-  function showLook(){
-    var grid = document.getElementById('look-grid');
-    var list = document.getElementById('look-list');
-    grid.innerHTML = ''; list.innerHTML = '';
-    items.slice(0, 3).forEach(function(it, i){
-      var f = document.createElement('figure');
-      var im = document.createElement('img'); im.src = it.src; im.alt = it.name;
-      f.appendChild(im); grid.appendChild(f);
-      var li = document.createElement('li');
-      li.innerHTML = '<span class="num">0' + (i+1) + '</span><span class="nm"></span><span class="mono grey">' + it.cat + '</span>';
-      li.querySelector('.nm').textContent = it.name;
-      list.appendChild(li);
-    });
-    openSheet(shLook);
-    flags.onboarded = true;
-    remember();
+  // ─── карточка образа · блок F ───
+  var shLook    = document.getElementById('sh-look');
+  var lookGrid  = document.getElementById('look-grid');
+  var lookList  = document.getElementById('look-list');
+  var lookNum   = document.getElementById('look-num');
+  var lookTag   = document.getElementById('look-tag');
+  var lookTitle = document.getElementById('look-title');
+  var lookWhy   = document.getElementById('look-why');
+  var lookNote  = document.getElementById('look-note');
+  var lookHeart = document.getElementById('look-heart');
+
+  // заголовки и объяснения — заготовки по поводу, пока нет текстовой модели
+  var LOOK_TEXT = {
+    'первый образ': {
+      head: 'Тёплый верх,', em: 'прямой низ',
+      why: 'Три вещи, которые ты сняла первыми, уже держатся вместе. Верх мягкий, низ прямой — этого достаточно, чтобы образ читался собранным.'
+    },
+    'на учёбу': {
+      head: 'Спокойный верх,', em: 'плотный низ',
+      why: 'Ничего не спорит между собой: один тон ведёт, остальные поддерживают. В таком можно просидеть весь день и ничего на себе не поправлять.'
+    },
+    'вечер': {
+      head: 'Тёмное к тёмному,', em: 'светлое пятном',
+      why: 'Основа уходит в тень, светлая вещь работает акцентом. Вечером этого хватает, чтобы образ перестал выглядеть дневным.'
+    },
+    'прогулка': {
+      head: 'Мягкое поверх,', em: 'устойчивое снизу',
+      why: 'Верх свободный, низ держит форму. Если похолодает, верхний слой снимается — образ от этого не рассыплется.'
+    },
+    'выходной': {
+      head: 'Простое сверху,', em: 'удобное снизу',
+      why: 'Здесь нечего поправлять и не о чем думать. Такие сочетания надеваются, когда одежда должна просто не мешать.'
+    }
+  };
+
+  var liked   = {};
+  var curLook = 0;
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function wears(n){
+    if (!n) return 'ни разу';
+    if (n % 10 === 1 && n % 100 !== 11) return n + ' носка';
+    if (n % 10 > 1 && n % 10 < 5 && (n % 100 < 10 || n % 100 > 20)) return n + ' носки';
+    return n + ' носок';
   }
+
+  function note(text){
+    lookNote.textContent = text;
+    lookNote.hidden = false;
+    clearTimeout(note.t);
+    note.t = setTimeout(function(){ lookNote.hidden = true; }, 3400);
+  }
+
+  function showLook(i){
+    var looks = looksFrom(items);
+    if (!looks.length) return;
+    if (typeof i !== 'number' || i < 0 || i >= looks.length) i = 0;
+    curLook = i;
+    var lk = looks[i];
+    var txt = LOOK_TEXT[lk.tag] || LOOK_TEXT['первый образ'];
+
+    lookNum.textContent = pad(i + 1) + ' / ' + pad(looks.length);
+    lookTag.textContent = lk.tag + ' · пятница';
+    lookTitle.innerHTML = '';
+    lookTitle.appendChild(document.createTextNode(txt.head));
+    var em = document.createElement('em');
+    em.textContent = txt.em;
+    lookTitle.appendChild(em);
+    lookWhy.textContent = txt.why;
+
+    lookGrid.innerHTML = '';
+    lookList.innerHTML = '';
+    lk.things.forEach(function(it, k){
+      var f = document.createElement('figure');
+      var im = document.createElement('img');
+      im.src = it.src; im.alt = it.name;
+      f.appendChild(im);
+      lookGrid.appendChild(f);
+
+      var li = document.createElement('li');
+      var num = document.createElement('span');
+      num.className = 'num'; num.textContent = pad(k + 1);
+      var nm = document.createElement('span');
+      nm.className = 'nm'; nm.textContent = it.name;
+      var meta = document.createElement('span');
+      meta.className = 'mono grey';
+      meta.textContent = '2026 · ' + wears(it.worn || 0);
+      li.appendChild(num); li.appendChild(nm); li.appendChild(meta);
+      lookList.appendChild(li);
+    });
+
+    lookHeart.setAttribute('aria-pressed', liked[lk.tag] ? 'true' : 'false');
+    lookHeart.innerHTML = liked[lk.tag] ? '\u2665' : '\u2661';
+    lookNote.hidden = true;
+    openSheet(shLook);
+  }
+
+  document.getElementById('look-again').addEventListener('click', function(){
+    var looks = looksFrom(items);
+    if (looks.length < 2){
+      note('Пока это единственный образ — собери ещё вещей');
+      return;
+    }
+    showLook((curLook + 1) % looks.length);
+  });
+
+  lookHeart.addEventListener('click', function(){
+    var looks = looksFrom(items);
+    var lk = looks[curLook];
+    if (!lk) return;
+    liked[lk.tag] = !liked[lk.tag];
+    lookHeart.setAttribute('aria-pressed', liked[lk.tag] ? 'true' : 'false');
+    lookHeart.innerHTML = liked[lk.tag] ? '\u2665' : '\u2661';
+  });
+
+  document.getElementById('look-share').addEventListener('click', function(){
+    var url = location.href.split('#')[0];
+    if (navigator.share){
+      navigator.share({title: 'VIDNO', url: url}).catch(function(){});
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ note('Ссылка скопирована'); }, function(){});
+      return;
+    }
+    note('Поделиться получится с телефона');
+  });
 
 
   // ═══════════ главная «Сегодня» · блок E ═══════════
@@ -2003,7 +2146,7 @@ body{
       tg.className = 'mono tag';
       tg.textContent = lk.tag;
       card.appendChild(tg);
-      card.addEventListener('click', showLook);
+      (function(k){ card.addEventListener('click', function(){ showLook(k); }); })(i);
       looksRail.appendChild(card);
     });
 
