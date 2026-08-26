@@ -797,7 +797,7 @@ body{
 
 /* фотография сезона во всю ширину */
 .hero{position:relative;height:250px;overflow:hidden;background:var(--ink);}
-.hero-pic{position:absolute;inset:0;background:var(--ink) center/cover no-repeat;}
+.hero-pic{position:absolute;inset:0;background:var(--ink) url("hero.jpg") center/cover no-repeat;}
 .hero-grain{position:absolute;inset:-20%;opacity:.06;}
 .hero-veil{
   position:absolute;inset:0;
@@ -900,6 +900,7 @@ body{
 .look-card:focus-visible{outline:1px solid var(--accent);outline-offset:-3px;}
 
 .rail-empty{padding:16px 20px 0;}
+.looks-soon{padding:30px 20px 0;}
 
 /* идеи */
 .rail-block.ideas{margin-top:36px;border-top:2px solid var(--accent);padding-top:26px;}
@@ -907,28 +908,63 @@ body{
   position:relative;
   flex:0 0 148px;
   height:196px;
+  margin:0;
+  padding:0;
+  border:0;
   overflow:hidden;
   scroll-snap-align:start;
-  background:
-    repeating-linear-gradient(58deg, rgba(28,20,15,.075) 0 1px, rgba(28,20,15,0) 1px 13px),
-    var(--bg2);
+  background:var(--bg2);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
 }
-.idea-card.ink{
-  color:var(--paper);
-  background:
-    repeating-linear-gradient(58deg, rgba(247,239,228,.11) 0 1px, rgba(247,239,228,0) 1px 13px),
-    var(--ink);
+.idea-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.idea-card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(28,20,15,0) 52%, rgba(28,20,15,.56) 100%);
 }
-.idea-word{
-  position:absolute;left:14px;right:14px;top:15px;
-  margin:0;
+.idea-card:focus-visible{outline:1px solid var(--accent);outline-offset:-3px;}
+.idea-num{position:absolute;left:12px;bottom:11px;z-index:1;color:rgba(247,239,228,.86);}
+
+/* ─────────── экран «Идеи» · лента ─────────── */
+
+.feed{padding:26px 0 44px;}
+.idea{margin:0 0 36px;}
+.idea:last-child{margin-bottom:0;}
+.idea-pic{position:relative;height:420px;overflow:hidden;background:var(--bg2);}
+.idea-pic img{width:100%;height:100%;object-fit:cover;display:block;}
+.idea-pic::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(28,20,15,0) 44%, rgba(28,20,15,.74) 100%);
+}
+.idea-cap{position:absolute;left:20px;right:20px;bottom:18px;z-index:1;}
+.idea-cap .mono{color:#F0836A;}
+.idea-name{
+  margin:9px 0 0;
   font-family:var(--f-title);
   font-weight:400;
-  font-size:17px;
-  line-height:1.14;
+  font-size:26px;
+  line-height:1.06;
+  color:var(--paper);
 }
-.idea-num{position:absolute;left:14px;bottom:12px;color:var(--grey);}
-.idea-card.ink .idea-num{color:#A89683;}
+.idea-name em{
+  display:block;
+  font-family:var(--f-accent);
+  font-style:italic;
+  font-weight:400;
+  font-size:46px;
+  line-height:.94;
+  letter-spacing:-.02em;
+}
+.idea-why{
+  margin:0;
+  padding:16px 20px 0;
+  font-family:var(--f-body);
+  font-size:15px;
+  font-weight:300;
+  line-height:1.45;
+  color:var(--grey);
+}
+.idea-no{padding:13px 20px 0;}
 
 .ideas-foot{
   display:flex;
@@ -1179,7 +1215,7 @@ body{
 
     <div class="statusstrip">
       <span>Пятница</span>
-      <span>04.09 · +7°</span>
+      <span>04.09 · +23°</span>
     </div>
 
     <div class="splash-top">
@@ -1219,37 +1255,38 @@ body{
       </div>
 
       <div class="hero">
-        <div class="hero-pic" id="hero-pic"></div>
+        <div class="hero-pic"></div>
         <svg class="hero-grain" aria-hidden="true"><filter id="grain-hero"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#grain-hero)"/></svg>
         <div class="hero-veil" aria-hidden="true"></div>
         <span class="mono hero-tag hero-tag--l">[ 04.09 · осень ]</span>
-        <span class="mono hero-tag hero-tag--r">+7°</span>
+        <span class="mono hero-tag hero-tag--r">+23°</span>
         <h1 class="hero-title">Осень любит<em>слои</em></h1>
       </div>
 
       <section class="wx">
         <div class="wx-head">
           <span class="mono accent">[ погода ]</span>
-          <span class="mono grey">утром 5 · днём 12</span>
+          <span class="mono grey">утром 12 · днём 23</span>
         </div>
         <div class="wx-rule"></div>
         <div class="wx-lines" id="wx-lines"></div>
       </section>
 
-      <section class="rail-block">
+      <p class="mono grey looks-soon" id="looks-soon" hidden>[ твои образы ] соберутся, когда в шкафу будет три вещи</p>
+
+      <section class="rail-block" id="looks-block" hidden>
         <div class="rail-head">
           <h2 class="rail-title">Твои образы</h2>
           <span class="count" id="looks-count">( 0 )</span>
         </div>
         <p class="mono grey rail-sub">Собрано из твоего гардероба</p>
         <div class="rail" id="looks-rail"></div>
-        <p class="mono grey rail-empty" id="looks-empty" hidden>Собери три вещи — здесь появится первый образ</p>
       </section>
 
       <section class="rail-block ideas">
         <div class="rail-head">
           <h2 class="rail-title">Идеи</h2>
-          <span class="count">( 24 )</span>
+          <span class="count" id="ideas-count">( 4 )</span>
         </div>
         <p class="mono grey rail-sub">Так носят этой осенью</p>
         <div class="rail" id="ideas-rail"></div>
@@ -1337,26 +1374,18 @@ body{
       <input type="file" id="picker" accept="image/*" multiple hidden>
     </section>
 
-    <!-- ИДЕИ -->
+    <!-- ИДЕИ · лента -->
     <section class="screen" id="s-ideas" role="tabpanel" aria-labelledby="t-ideas" hidden>
       <div class="statusbar"></div>
       <div class="scr-head">
         <span class="mono">VIDNO</span>
         <span class="mono grey">[ идеи ]</span>
       </div>
-      <h1 class="title">Здесь будут<em>идеи</em></h1>
-      <p class="mono accent eyebrow">блок G · идея</p>
 
-      <div class="stub">
-        <p class="mono grey">[ каркас ]</p>
-        <ul class="plan">
-          <li><span class="num">01</span><span>Лента идей осени <span class="count">( 0 )</span></span></li>
-          <li><span class="num">02</span><span>Карточка идеи с фотографией</span></li>
-          <li><span class="num">03</span><span>Тёмная плашка «что перенять»</span></li>
-          <li><span class="num">04</span><span>Кнопка «Собрать из своего»</span></li>
-        </ul>
-        <p class="mono grey stub-foot">экран собирается</p>
-      </div>
+      <h1 class="title title--wr">Идеи <span class="count" id="ideas-total">( 4 )</span></h1>
+      <p class="mono grey eyebrow">Так носят этой осенью</p>
+
+      <div class="feed" id="ideas-feed"></div>
     </section>
 
     <!-- СВЯЗКА -->
@@ -1485,7 +1514,7 @@ body{
   <!-- НИЖНЯЯ ПАНЕЛЬ -->
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="Разделы" hidden>
     <button class="tab" id="t-today" type="button" role="tab" aria-selected="true" aria-controls="s-today" data-screen="s-today">
-      <span class="dot" aria-hidden="true"></span><span class="tab-label">Сегодня</span>
+      <span class="dot" aria-hidden="true"></span><span class="tab-label">Главная</span>
     </button>
     <button class="tab" id="t-wardrobe" type="button" role="tab" aria-selected="false" aria-controls="s-wardrobe" data-screen="s-wardrobe">
       <span class="dot" aria-hidden="true"></span><span class="tab-label">Гардероб</span>
@@ -2059,21 +2088,41 @@ body{
 
   // ═══════════ главная «Сегодня» · блок E ═══════════
 
-  var heroPic   = document.getElementById('hero-pic');
   var wxBox     = document.getElementById('wx-lines');
   var looksRail = document.getElementById('looks-rail');
   var looksCnt  = document.getElementById('looks-count');
-  var looksNone = document.getElementById('looks-empty');
-  var ideasRail = document.getElementById('ideas-rail');
+  var looksBlock = document.getElementById('looks-block');
+  var looksSoon  = document.getElementById('looks-soon');
+  var ideasRail  = document.getElementById('ideas-rail');
+  var ideasFeed  = document.getElementById('ideas-feed');
 
-  var WX = ['Дождь до вечера.', 'Утром пять, днём двенадцать.', 'Ветер. Шарф не будет лишним.'];
+  var WX = ['Ясно, к вечеру ветрено.', 'Утром двенадцать, днём двадцать три.', 'Вот такая вот фигня собачка.'];
   var OCCASIONS = ['первый образ', 'на учёбу', 'вечер', 'прогулка', 'выходной'];
   var IDEAS = [
-    'Тёплое поверх гладкого',
-    'Мех и бордо',
-    'Слой на слой',
-    'Прямое и мягкое',
-    'Шарф вместо слов'
+    {
+      pic: 'idea-01.jpg',
+      tag: 'идея осени · кожа и молоко',
+      head: 'Жёсткое сверху,', em: 'мягкое снизу',
+      why: 'Плотная кожа держит форму сама, широкие светлые брюки её отпускают. Контраст делает всю работу — добавлять к нему больше нечего.'
+    },
+    {
+      pic: 'idea-02.jpg',
+      tag: 'идея осени · чёрное и сливочное',
+      head: 'Один тон сверху,', em: 'один снизу',
+      why: 'Верх собран в один чёрный, низ — в один светлый, граница проходит по ремню. Коричневая сумка не спорит ни с тем, ни с другим: она третья и потому заметна.'
+    },
+    {
+      pic: 'idea-03.jpg',
+      tag: 'идея осени · коричневое поверх чёрного',
+      head: 'Объём сверху,', em: 'голенище снизу',
+      why: 'Широкий пиджак и высокий сапог оставляют открытым узкий просвет — из-за него образ читается лёгким, хотя вещи тяжёлые. Коричневый греет чёрный, которого иначе было бы слишком много.'
+    },
+    {
+      pic: 'idea-04.jpg',
+      tag: 'идея осени · серое и бордо',
+      head: 'Тихий верх,', em: 'громкая сумка',
+      why: 'Серый трикотаж и тёмная полоска ничего не обещают — вся громкость отдана одной вещи. Так работает единственный акцент: его видно, потому что вокруг тихо.'
+    }
   ];
 
   // ─── погода печатается по строке, один раз в день ───
@@ -2135,14 +2184,10 @@ body{
   }
 
   function paintToday(){
-    heroPic.style.backgroundImage = items.length
-      ? 'url("' + items[items.length - 1].src + '")'
-      : 'none';
-
     var looks = looksFrom(items);
     looksCnt.textContent = '( ' + looks.length + ' )';
-    looksNone.hidden = looks.length > 0;
-    looksRail.hidden = looks.length === 0;
+    looksBlock.hidden = looks.length === 0;      // пустой раздел не показываем
+    looksSoon.hidden  = looks.length > 0;
     looksRail.innerHTML = '';
     looks.forEach(function(lk, i){
       var card = document.createElement('button');
@@ -2163,21 +2208,73 @@ body{
       looksRail.appendChild(card);
     });
 
+    paintIdeas();
+  }
+
+  // ─── идеи: лента на главной и свой экран ───
+  function ideaNumber(i){ return pad(i + 1) + ' / ' + pad(IDEAS.length); }
+
+  function paintIdeas(){
     if (ideasRail.childElementCount === 0){
-      IDEAS.forEach(function(word, i){
-        var card = document.createElement('article');
-        card.className = 'idea-card' + (i % 2 ? ' ink' : '');
-        var h = document.createElement('p');
-        h.className = 'idea-word';
-        h.textContent = word;
+      IDEAS.forEach(function(idea, i){
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'idea-card';
+        var im = document.createElement('img');
+        im.src = idea.pic; im.alt = idea.head + ' ' + idea.em; im.loading = 'lazy';
         var n = document.createElement('span');
         n.className = 'mono idea-num';
-        n.textContent = '0' + (i + 1) + ' / 24';
-        card.appendChild(h); card.appendChild(n);
+        n.textContent = ideaNumber(i);
+        card.appendChild(im); card.appendChild(n);
+        card.addEventListener('click', function(){ show('s-ideas'); });   // карточка ведёт в «Идеи»
         ideasRail.appendChild(card);
       });
     }
+
+    if (ideasFeed.childElementCount === 0){
+      IDEAS.forEach(function(idea, i){
+        var art = document.createElement('article');
+        art.className = 'idea';
+
+        var pic = document.createElement('div');
+        pic.className = 'idea-pic';
+        var im = document.createElement('img');
+        im.src = idea.pic; im.alt = ''; im.loading = 'lazy';
+
+        var cap = document.createElement('div');
+        cap.className = 'idea-cap';
+        var tag = document.createElement('p');
+        tag.className = 'mono';
+        tag.textContent = idea.tag;
+        var h = document.createElement('h2');
+        h.className = 'idea-name';
+        h.appendChild(document.createTextNode(idea.head));
+        var em = document.createElement('em');
+        em.textContent = idea.em;
+        h.appendChild(em);
+        cap.appendChild(tag); cap.appendChild(h);
+
+        pic.appendChild(im); pic.appendChild(cap);
+
+        var why = document.createElement('p');
+        why.className = 'idea-why';
+        why.textContent = idea.why;
+
+        var no = document.createElement('p');
+        no.className = 'mono grey idea-no';
+        no.textContent = ideaNumber(i);
+
+        art.appendChild(pic); art.appendChild(why); art.appendChild(no);
+        ideasFeed.appendChild(art);
+      });
+    }
+
+    var n = '( ' + IDEAS.length + ' )';
+    document.getElementById('ideas-count').textContent = n;
+    document.getElementById('ideas-total').textContent = n;
   }
+
+  document.getElementById('all-ideas').addEventListener('click', function(){ show('s-ideas'); });
 
   // ─── общее для листов ───
   function openSheet(el){ el.hidden = false; el.scrollTop = 0; }
