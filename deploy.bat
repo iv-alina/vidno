@@ -32,6 +32,8 @@ if errorlevel 1 git config user.name "iv-alina"
 git config user.email >nul 2>nul
 if errorlevel 1 git config user.email "iv-alina@users.noreply.github.com"
 
+if exist "sw.js" call :shtamp
+
 git add -A
 git rm --cached -r --quiet _to_delete >nul 2>nul
 git rm --cached --quiet *.md >nul 2>nul
@@ -50,6 +52,8 @@ if errorlevel 1 goto :net_otpravki
 echo.
 echo   Опубликовано. Через 1-2 минуты обновится:
 echo   https://iv-alina.github.io/vidno/
+echo.
+echo   На телефоне приложение само предложит обновиться.
 goto :konec
 
 :net_izmeneniy
@@ -80,6 +84,11 @@ echo       Чаще всего это вход: git должен открыть окно авторизации.
 echo       Если окно не появилось, выполни один раз в командной строке:
 echo       git config --global credential.helper manager
 goto :konec
+
+:shtamp
+powershell -NoProfile -Command "$p = Join-Path $PWD 'sw.js'; $v = Get-Date -Format 'yyyyMMdd-HHmm'; $s = [IO.File]::ReadAllText($p); $s = $s -replace 'var BUILD = ''[^'']*'';', ('var BUILD = ''' + $v + ''';'); [IO.File]::WriteAllText($p, $s, (New-Object Text.UTF8Encoding($false))); Write-Host ('  versiya ' + $v)"
+if errorlevel 1 echo   [!] Штамп версии не поставился - телефон может не заметить обновление.
+exit /b
 
 :sozdat_gitignore
 > .gitignore echo _to_delete/

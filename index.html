@@ -4,15 +4,14 @@
 <meta charset="utf-8">
 <title>VIDNO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-store">
 <meta name="theme-color" content="#F2E9DD">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="VIDNO">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
-<title>VIDNO</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@300&display=swap">
@@ -735,6 +734,7 @@ body{
   background:var(--ink);
   color:var(--paper);
 }
+.update{z-index:7;}
 .undo .mono{color:var(--paper);}
 .undo-btn{
   background:none;border:0;
@@ -1380,6 +1380,12 @@ body{
   <div class="undo" id="undo" hidden role="status">
     <span class="mono">Вещь убрана</span>
     <button class="undo-btn" type="button" id="undo-btn">Вернуть</button>
+  </div>
+
+  <!-- вышла новая версия -->
+  <div class="undo update" id="update" hidden role="status">
+    <span class="mono">Вышла новая версия</span>
+    <button class="undo-btn" type="button" id="update-btn">Обновить</button>
   </div>
 
   <!-- круглая кнопка «добавить вещь» · только на мозаике -->
@@ -2186,6 +2192,60 @@ body{
 
   paintWardrobe();
 
+})();
+</script>
+
+<script>
+/* обновление приложения: сервис-воркер держит страницу свежей,
+   а когда приезжает новая версия — предлагает перезагрузиться */
+(function(){
+  if (!('serviceWorker' in navigator)) return;
+
+  var bar = document.getElementById('update');
+  var btn = document.getElementById('update-btn');
+  var waiting = null;
+  var asked = false;          // перезагружаемся только если человек сам нажал «Обновить»
+  var reloading = false;
+
+  function offer(worker){
+    waiting = worker;
+    bar.hidden = false;
+  }
+
+  function refresh(){
+    if (reloading) return;
+    reloading = true;
+    location.reload();
+  }
+
+  navigator.serviceWorker.register('sw.js').then(function(reg){
+    if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+
+    reg.addEventListener('updatefound', function(){
+      var fresh = reg.installing;
+      if (!fresh) return;
+      fresh.addEventListener('statechange', function(){
+        if (fresh.state === 'installed' && navigator.serviceWorker.controller) offer(fresh);
+      });
+    });
+
+    function look(){ try { reg.update(); } catch(_){} }
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) look(); });
+    window.addEventListener('focus', look);
+    setInterval(look, 1800000);            // раз в полчаса, пока приложение открыто
+  }).catch(function(){});
+
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if (asked) refresh();
+  });
+
+  btn.addEventListener('click', function(){
+    bar.hidden = true;
+    asked = true;
+    if (!waiting){ refresh(); return; }
+    waiting.postMessage({type: 'skip-waiting'});
+    setTimeout(refresh, 1800);        // если воркер почему-то не перехватил — перезагрузимся сами
+  });
 })();
 </script>
 
