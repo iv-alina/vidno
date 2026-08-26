@@ -2,7 +2,7 @@
    Задача одна: страница всегда берётся из сети, иконки — из кеша,
    а когда выходит новая версия, приложение предлагает обновиться. */
 
-var BUILD = '20260826-1112';                       // эту строку переписывает deploy.bat при каждой публикации
+var BUILD = '20260826-1120';                       // эту строку переписывает deploy.bat при каждой публикации
 var CACHE = 'vidno-' + BUILD;
 var SHELL = ['./', './index.html', './icon-180.png', './icon-512.png', './manifest.json'];
 
@@ -30,7 +30,11 @@ self.addEventListener('activate', function(e){
 });
 
 self.addEventListener('message', function(e){
-  if (e.data && e.data.type === 'skip-waiting') self.skipWaiting();
+  if (!e.data) return;
+  if (e.data.type === 'skip-waiting') self.skipWaiting();
+  if (e.data.type === 'build' && e.ports && e.ports[0]){
+    e.ports[0].postMessage({build: BUILD});     // страница спрашивает, какая версия сейчас работает
+  }
 });
 
 self.addEventListener('fetch', function(e){

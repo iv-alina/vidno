@@ -735,6 +735,10 @@ body{
   color:var(--paper);
 }
 .update{z-index:7;}
+
+/* служебная строка: сброс и номер версии · убрать перед показом людям */
+.testline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;}
+.testline .reset{margin:0;}
 .undo .mono{color:var(--paper);}
 .undo-btn{
   background:none;border:0;
@@ -1324,7 +1328,10 @@ body{
           <li><span class="num">02</span><span>На третьей вещи соберём первый образ</span></li>
           <li><span class="num">03</span><span>На пятнадцатой начнутся утренние подборки</span></li>
         </ol>
-        <button class="reset" type="button" id="reset">[ сброс · только для теста ]</button>
+        <div class="testline">
+          <button class="reset" type="button" id="reset">[ сброс · только для теста ]</button>
+          <span class="mono grey" id="build-stamp">версия —</span>
+        </div>
       </div>
 
       <input type="file" id="picker" accept="image/*" multiple hidden>
@@ -2203,6 +2210,20 @@ body{
 
   var bar = document.getElementById('update');
   var btn = document.getElementById('update-btn');
+  var stamp = document.getElementById('build-stamp');
+
+  // спрашиваем у работающего воркера, какая версия сейчас в деле
+  function readBuild(){
+    var ctrl = navigator.serviceWorker.controller;
+    if (!ctrl || !stamp) return;
+    var ch = new MessageChannel();
+    ch.port1.onmessage = function(e){
+      if (e.data && e.data.build) stamp.textContent = 'версия ' + e.data.build;
+    };
+    try { ctrl.postMessage({type: 'build'}, [ch.port2]); } catch(_){}
+  }
+  navigator.serviceWorker.ready.then(readBuild).catch(function(){});
+  setTimeout(readBuild, 1200);
   var waiting = null;
   var asked = false;          // перезагружаемся только если человек сам нажал «Обновить»
   var reloading = false;
@@ -2236,7 +2257,8 @@ body{
   }).catch(function(){});
 
   navigator.serviceWorker.addEventListener('controllerchange', function(){
-    if (asked) refresh();
+    if (asked){ refresh(); return; }
+    readBuild();
   });
 
   btn.addEventListener('click', function(){
