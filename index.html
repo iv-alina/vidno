@@ -1002,7 +1002,7 @@ body{
 .splash.is-dragging{transition:none;}
 .splash:focus-visible{outline:1px solid var(--acc,#D98FA4);outline-offset:-4px;}
 
-.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .16s linear;}
+.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .10s linear;}
 .sp-slide.on{opacity:1;}
 .sp-slide i{
   position:absolute;inset:-7%;display:block;
@@ -1037,7 +1037,7 @@ body{
   transform:translateY(-50%);
   z-index:3;text-align:center;
   color:var(--acc,#F7EFF1);
-  transition:color .18s linear;
+  transition:color .1s linear;
 }
 .logo{
   margin:0;
@@ -1576,7 +1576,7 @@ body{
   }
 
   // ═══════════ заставка на текстурах ═══════════
-  // Все одиннадцать тканей, порядок каждый раз новый, кадр держится 0,9 с.
+  // Все одиннадцать тканей, порядок каждый раз новый, кадр держится 0,55 с.
   // Бликов нет: контраст несёт сама фотография.
   // Начертание названия меняется вместе с материалом — по семьям, не наугад.
 
@@ -1686,7 +1686,7 @@ body{
     }
     spShow(0);
     if (!still()){
-      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 900);
+      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 550);
       requestAnimationFrame(spDrift);
     }
   })();
