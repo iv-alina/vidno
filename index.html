@@ -1028,13 +1028,13 @@ body{
 .splash.is-dark .sp-veil,
 .splash.is-dark .sp-grain,
 .splash.is-dark .sp-line{opacity:0;}
-.splash.is-dark .sp-mark{transition:color 1.4s ease, transform .52s cubic-bezier(.4,0,.25,1), opacity .4s ease-in;}
+.splash.is-dark .sp-mark{transition:color 1.4s ease, transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;}
 .splash.is-dark .hint{color:rgba(255,255,255,.82);}
 
 /* при входе текст надвигается на человека и пропадает */
-.hint-wrap{transition:transform .52s cubic-bezier(.4,0,.25,1), opacity .4s ease-in;}
-.splash.is-leaving .sp-mark{transform:translateY(-50%) scale(2.9);opacity:0;}
-.splash.is-leaving .hint-wrap{transform:scale(2.2);opacity:0;}
+.hint-wrap{transition:transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;}
+.splash.is-leaving .sp-mark{transform:translateY(-50%) scale(3.6);opacity:0;}
+.splash.is-leaving .hint-wrap{transform:scale(2.6);opacity:0;}
 
 /* верхняя строка — как системная панель телефона */
 .statusstrip{
@@ -1055,7 +1055,7 @@ body{
   transform:translateY(-50%);
   z-index:3;text-align:center;
   color:var(--acc,#F7EFF1);
-  transition:color .06s linear, transform .52s cubic-bezier(.4,0,.25,1), opacity .4s ease-in;
+  transition:color .06s linear, transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;
 }
 .logo{
   margin:0;
@@ -1485,7 +1485,7 @@ body{
   }
   function finish(){
     splash.hidden = true;
-    clearTimeout(spTimer);
+    clearInterval(spTimer);
     spAskTilt();
     var t = document.querySelector('.tab[data-screen="' + landed + '"]');
     if (t) t.focus({preventScroll:true});
@@ -1499,7 +1499,7 @@ body{
     if (still()){ finish(); return; }
     splash.classList.add('is-leaving');
     phone.classList.add('is-entering');
-    setTimeout(finish, 600);
+    setTimeout(finish, 680);
   }
 
   // вход перетаскиванием — заставка продолжает движение пальца
@@ -1508,13 +1508,12 @@ body{
     entered = true;
     reveal();
     if (still()){ finish(); return; }
-    var h = splash.offsetHeight + 60;
     splash.classList.remove('is-dragging');
-    splash.style.transition = 'opacity .26s ease-in, transform .4s cubic-bezier(.22,.61,.36,1)';
-    splash.style.transform = 'translate3d(0,-' + h + 'px,0)';
-    splash.style.opacity = '0';
+    splash.style.opacity = '';                  // инлайн перебил бы класс
+    splash.style.transition = 'opacity .46s ease-in';
+    splash.classList.add('is-leaving');         // название надвигается и растворяется
     phone.classList.add('is-entering');
-    setTimeout(finish, 420);
+    setTimeout(finish, 620);
   }
 
   // ─── жест: тянем, а не смахиваем ───
@@ -1594,8 +1593,8 @@ body{
   }
 
   // ═══════════ заставка на текстурах ═══════════
-  // Все одиннадцать тканей. Кадр не держится ровно: смена разгоняется
-  // с 0,30 с до 0,10 с за девять секунд, потом ткани гаснут в чёрное.
+  // Все одиннадцать тканей, ровно 0,1 с на кадр. На девятой секунде ткани
+  // начинают гаснуть, но продолжают меняться до самой черноты.
   // Бликов нет: контраст несёт сама фотография.
   // Начертание названия меняется вместе с материалом — по семьям, не наугад.
 
@@ -1644,12 +1643,13 @@ body{
     return d;
   });
 
-  var spI = 0, spTimer = null, spDark = false;
+  var spI = 0, spTimer = null, spDark = false, spOff = false;
 
   function spShow(n){
     spSlides[spI].classList.remove('on');
     spI = (n + spCards.length) % spCards.length;
     spSlides[spI].classList.add('on');
+    if (spDark) return;                     // гаснем — название уже белое и не мигает
     var t = spCards[spI], f = SP_FONT[t.f];
     splash.style.setProperty('--acc',  t.acc);
     splash.style.setProperty('--halo', SP_HALO[t.halo]);
@@ -1683,7 +1683,7 @@ body{
   }
 
   function spDrift(ms){
-    if (entered || spDark) return;
+    if (entered || spOff) return;
     if (!spTouched) spDepth(50 + Math.sin(ms / 3400) * 26, 40 + Math.cos(ms / 4600) * 15);
     requestAnimationFrame(spDrift);
   }
@@ -1703,22 +1703,10 @@ body{
     }, 700);
   }
 
-  // разгон: чем дальше, тем короче кадр
-  var SP_FROM = 300, SP_TO = 100, SP_RUN = 9000;
-  var spT0 = 0;
-
-  function spTick(){
-    if (entered || spDark) return;
-    var k = Math.min(1, (Date.now() - spT0) / SP_RUN);
-    spShow(spI + 1);
-    spTimer = setTimeout(spTick, SP_FROM + (SP_TO - SP_FROM) * k * k);
-  }
-
-  // ткани гаснут, остаётся чёрное поле с белым названием
+  // ткани гаснут, но продолжают меняться — до самой черноты
   function spGoDark(){
     if (spDark) return;
     spDark = true;
-    clearTimeout(spTimer);
     splash.classList.add('is-dark');
     splash.style.setProperty('--acc', '#FFFFFF');
     splash.style.setProperty('--lf',  '"Cormorant Garamond",Georgia,serif');
@@ -1726,6 +1714,10 @@ body{
     splash.style.setProperty('--lw',  400);
     splash.style.setProperty('--lt',  '.20em');
     splash.style.setProperty('--halo','none');
+    setTimeout(function(){                  // погасло совсем — крутить больше нечего
+      spOff = true;
+      clearInterval(spTimer);
+    }, 1900);
   }
 
   (function spStart(){
@@ -1735,9 +1727,8 @@ body{
     }
     if (still()){ spShow(0); spGoDark(); return; }   // без анимаций сразу чёрное поле
     spShow(Math.floor(Math.random() * spCards.length));
-    spT0 = Date.now();
-    spTimer = setTimeout(spTick, SP_FROM);
-    setTimeout(spGoDark, 9200);
+    spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 100);
+    setTimeout(spGoDark, 9000);
     requestAnimationFrame(spDrift);
   })();
 
