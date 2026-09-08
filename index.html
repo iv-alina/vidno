@@ -14,7 +14,7 @@
 <link rel="icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400;500;600&family=Fira+Mono&family=Manrope:wght@200;300&family=Yeseva+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400;500;600&family=Fira+Mono:wght@400;700&family=Manrope:wght@200;300;500&family=Yeseva+One&display=swap">
 
 </head>
 <body>
@@ -1002,7 +1002,7 @@ body{
 .splash.is-dragging{transition:none;}
 .splash:focus-visible{outline:1px solid var(--acc,#D98FA4);outline-offset:-4px;}
 
-.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .10s linear;}
+.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .06s linear;}
 .sp-slide.on{opacity:1;}
 .sp-slide i{
   position:absolute;inset:-7%;display:block;
@@ -1037,7 +1037,7 @@ body{
   transform:translateY(-50%);
   z-index:3;text-align:center;
   color:var(--acc,#F7EFF1);
-  transition:color .1s linear;
+  transition:color .06s linear;
 }
 .logo{
   margin:0;
@@ -1576,40 +1576,45 @@ body{
   }
 
   // ═══════════ заставка на текстурах ═══════════
-  // Все одиннадцать тканей, порядок каждый раз новый, кадр держится 0,55 с.
+  // Все одиннадцать тканей, кадр держится 0,2 с.
   // Бликов нет: контраст несёт сама фотография.
   // Начертание названия меняется вместе с материалом — по семьям, не наугад.
 
   var SP_FONT = {
-    serif: {f:'"Cormorant Garamond",Georgia,serif', s:'54px', w:300, t:'.20em'},  // гладкое, дорогое
-    heavy: {f:'"Yeseva One",Georgia,serif',         s:'38px', w:400, t:'.14em'},  // пёстрое, нужен вес
-    mono:  {f:'"Fira Mono",monospace',              s:'33px', w:400, t:'.30em'},  // техническое
-    geo:   {f:'"Manrope",Arial,sans-serif',         s:'42px', w:200, t:'.32em'}   // матовое, мягкое
+    serif: {f:'"Cormorant Garamond",Georgia,serif', s:'54px', w:500, t:'.20em'},  // гладкое, дорогое
+    heavy: {f:'"Yeseva One",Georgia,serif',         s:'40px', w:400, t:'.14em'},  // пёстрое, нужен вес
+    mono:  {f:'"Fira Mono",monospace',              s:'30px', w:700, t:'.28em'},  // техническое
+    geo:   {f:'"Manrope",Arial,sans-serif',         s:'38px', w:500, t:'.30em'}   // матовое, мягкое
   };
 
   var SP_TEX = [
-    {id:'brown-leather', acc:'#9FD3E3', halo:'dark',  f:'geo'},
-    {id:'olive-knit',    acc:'#F2A9C4', halo:'dark',  f:'geo'},
-    {id:'lace-leather',  acc:'#E0374B', halo:'dark',  f:'mono'},
-    {id:'zebra',         acc:'#C4587A', halo:'both',  f:'heavy'},
-    {id:'python',        acc:'#7A2E44', halo:'light', f:'heavy'},
-    {id:'chiffon',       acc:'#E7A6B8', halo:'dark',  f:'serif'},
-    {id:'croc',          acc:'#9FD8C0', halo:'dark',  f:'serif'},
-    {id:'black-fur',     acc:'#E7A6B8', halo:'dark',  f:'geo'},
-    {id:'leopard',       acc:'#B9A6E8', halo:'dark',  f:'heavy'},
-    {id:'wine-leather',  acc:'#E3C77A', halo:'dark',  f:'serif'},
-    {id:'denim',         acc:'#F2B79A', halo:'dark',  f:'mono'}
+    {id:'black-fur',     acc:'#E7A6B8', halo:'dark',  f:'geo',   lum:.137},
+    {id:'wine-leather',  acc:'#E3C77A', halo:'dark',  f:'serif', lum:.170},
+    {id:'croc',          acc:'#9FD8C0', halo:'dark',  f:'serif', lum:.171},
+    {id:'lace-leather',  acc:'#E0374B', halo:'dark',  f:'mono',  lum:.195},
+    {id:'chiffon',       acc:'#E7A6B8', halo:'dark',  f:'serif', lum:.211},
+    {id:'brown-leather', acc:'#9FD3E3', halo:'dark',  f:'geo',   lum:.263},
+    {id:'olive-knit',    acc:'#F2A9C4', halo:'dark',  f:'geo',   lum:.307},
+    {id:'denim',         acc:'#F2B79A', halo:'dark',  f:'mono',  lum:.313},
+    {id:'leopard',       acc:'#B9A6E8', halo:'dark',  f:'heavy', lum:.321},
+    {id:'zebra',         acc:'#C4587A', halo:'both',  f:'heavy', lum:.433},
+    {id:'python',        acc:'#7A2E44', halo:'light', f:'heavy', lum:.549}
   ];
 
   // ореол: на светлой пестроте светлый, на тёмной тёмный, на зебре оба сразу
   var SP_HALO = {
-    dark:  '0 1px 0 rgba(255,255,255,.26), 0 2px 10px rgba(0,0,0,.62), 0 0 26px rgba(0,0,0,.45)',
-    light: '0 1px 0 rgba(255,255,255,.8), 0 0 12px rgba(255,252,248,.9), 0 1px 4px rgba(0,0,0,.3)',
-    both:  '0 0 3px rgba(0,0,0,.85), 0 0 18px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.32)'
+    dark:  '0 1px 0 rgba(255,255,255,.28), 0 1px 3px rgba(0,0,0,.9), 0 3px 14px rgba(0,0,0,.75), 0 0 34px rgba(0,0,0,.6)',
+    light: '0 1px 0 rgba(255,255,255,.9), 0 0 6px rgba(255,253,250,1), 0 0 18px rgba(255,252,248,.95), 0 1px 4px rgba(0,0,0,.35)',
+    both:  '0 0 2px rgba(0,0,0,.95), 0 0 8px rgba(0,0,0,.85), 0 0 22px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.35)'
   };
 
   var spBox   = document.getElementById('sp-slides');
-  var spCards = SP_TEX.slice().sort(function(){ return Math.random() - 0.5; });  // порядок новый, набор полный
+  // Кадры идут лестницей по светлоте — от самой тёмной ткани к самой светлой и
+  // обратно. На 0,2 с это принципиально: если ставить кадры вперемешку, чёрный мех
+  // рядом с питоном даёт полноэкранную вспышку пять раз в секунду — это и выглядит
+  // как сломанный экран, и опасно для светочувствительных людей.
+  var spRamp  = SP_TEX.slice().sort(function(a, b){ return a.lum - b.lum; });
+  var spCards = spRamp.concat(spRamp.slice(1, -1).reverse());
   var spSlides = spCards.map(function(t, n){
     var d = document.createElement('div');
     d.className = 'sp-slide' + (n === 0 ? ' on' : '');
@@ -1684,9 +1689,9 @@ body{
     if (D && (typeof D.requestPermission !== 'function' || flags.tilt === true)){
       window.addEventListener('deviceorientation', spTilt);
     }
-    spShow(0);
+    spShow(Math.floor(Math.random() * spCards.length));
     if (!still()){
-      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 550);
+      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 200);
       requestAnimationFrame(spDrift);
     }
   })();
