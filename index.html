@@ -14,7 +14,7 @@
 <link rel="icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400;500;600&family=Fira+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400;500;600&family=Fira+Mono&family=Manrope:wght@200;300&family=Yeseva+One&display=swap">
 
 </head>
 <body>
@@ -994,7 +994,7 @@ body{
   touch-action:none;          /* палец тянет заставку, а не страницу */
   -webkit-tap-highlight-color:transparent;
   transition:opacity .34s ease-in, transform .58s cubic-bezier(.22,.61,.36,1);
-  --mx:50%; --my:34%; --px:0px; --py:0px;
+  --px:0px; --py:0px;
 }
 .splash[hidden]{display:none;}
 .splash.is-leaving{opacity:0;transform:translate3d(0,-28px,0);pointer-events:none;}
@@ -1002,7 +1002,7 @@ body{
 .splash.is-dragging{transition:none;}
 .splash:focus-visible{outline:1px solid var(--acc,#D98FA4);outline-offset:-4px;}
 
-.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .34s ease;}
+.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .16s linear;}
 .sp-slide.on{opacity:1;}
 .sp-slide i{
   position:absolute;inset:-7%;display:block;
@@ -1011,27 +1011,10 @@ body{
   will-change:transform;
 }
 
-.sp-spec{
-  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
-  background:radial-gradient(var(--shape,circle) at var(--mx) var(--my),
-    rgba(255,249,242,var(--i,.3)) 0%,
-    rgba(255,246,236,calc(var(--i,.3) * .34)) 34%,
-    rgba(255,246,236,0) var(--r,55%));
-}
-.sp-core{
-  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
-  background:radial-gradient(circle at var(--mx) var(--my),
-    rgba(255,252,247,var(--i2,0)) 0%, rgba(255,252,247,0) var(--r2,14%));
-}
-.sp-shade{
-  position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;
-  background:radial-gradient(circle at calc(100% - var(--mx)) calc(100% - var(--my)),
-    rgba(24,16,20,.42) 0%, rgba(24,16,20,0) 62%);
-}
 .sp-veil{
   position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg, rgba(12,8,13,.56) 0%, rgba(12,8,13,.05) 26%,
-                                     rgba(12,8,13,.16) 58%, rgba(12,8,13,.74) 100%);
+  background:linear-gradient(180deg, rgba(12,8,13,.46) 0%, rgba(12,8,13,.03) 26%,
+                                     rgba(12,8,13,.12) 58%, rgba(12,8,13,.66) 100%);
 }
 .sp-grain{position:absolute;inset:-25%;opacity:.06;pointer-events:none;}
 
@@ -1054,18 +1037,17 @@ body{
   transform:translateY(-50%);
   z-index:3;text-align:center;
   color:var(--acc,#F7EFF1);
-  transition:color .5s ease;
+  transition:color .18s linear;
 }
 .logo{
   margin:0;
-  font-family:var(--f-logo);
+  font-family:var(--lf, var(--f-logo));
   font-weight:var(--lw,300);
-  font-size:54px;
-  letter-spacing:.20em;
-  text-indent:.20em;
+  font-size:var(--lsz,54px);
+  letter-spacing:var(--lt,.20em);
+  text-indent:var(--lt,.20em);
   line-height:1;
   text-shadow:var(--halo);
-  transition:font-weight .3s ease;
 }
 .sp-line{
   margin:17px 0 0;
@@ -1109,9 +1091,6 @@ body{
   <!-- ЭКРАН ОТКРЫТИЯ · без нижней панели -->
   <div class="splash" id="splash" tabindex="0" role="button" aria-label="Войти в приложение">
     <div class="sp-slides" id="sp-slides"></div>
-    <div class="sp-spec"></div>
-    <div class="sp-core"></div>
-    <div class="sp-shade"></div>
     <div class="sp-veil"></div>
     <svg class="sp-grain" aria-hidden="true"><filter id="sp-gr"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#sp-gr)"/></svg>
 
@@ -1597,36 +1576,32 @@ body{
   }
 
   // ═══════════ заставка на текстурах ═══════════
-  // Колода: из одиннадцати тканей на каждый запуск берём пять случайных.
-  // Одиннадцать человек всё равно не увидит — заставка живёт секунд восемь.
+  // Все одиннадцать тканей, порядок каждый раз новый, кадр держится 0,9 с.
+  // Бликов нет: контраст несёт сама фотография.
+  // Начертание названия меняется вместе с материалом — по семьям, не наугад.
 
-  var SP_TEX = [
-    {id:'brown-leather', mat:'leather-matte', acc:'#9FD3E3', w:300, halo:'dark'},
-    {id:'olive-knit',    mat:'knit',          acc:'#F2A9C4', w:400, halo:'dark'},
-    {id:'lace-leather',  mat:'leather-gloss', acc:'#E0374B', w:500, halo:'dark'},
-    {id:'zebra',         mat:'fur',           acc:'#C4587A', w:600, halo:'both'},
-    {id:'python',        mat:'scale',         acc:'#7A2E44', w:600, halo:'light'},
-    {id:'chiffon',       mat:'silk',          acc:'#E7A6B8', w:300, halo:'dark'},
-    {id:'croc',          mat:'scale-gloss',   acc:'#9FD8C0', w:400, halo:'dark'},
-    {id:'black-fur',     mat:'fur',           acc:'#E7A6B8', w:300, halo:'dark'},
-    {id:'leopard',       mat:'fur',           acc:'#B9A6E8', w:600, halo:'dark'},
-    {id:'wine-leather',  mat:'leather-gloss', acc:'#E3C77A', w:300, halo:'dark'},
-    {id:'denim',         mat:'weave',         acc:'#F2B79A', w:400, halo:'dark'}
-  ];
-
-  // характер блика по материалу
-  var SP_MAT = {
-    'leather-gloss': {r:'42%', i:.46, shape:'circle',          r2:'15%', i2:.24},
-    'leather-matte': {r:'58%', i:.30, shape:'circle',          r2:'0%',  i2:0},
-    'scale-gloss':   {r:'44%', i:.48, shape:'circle',          r2:'15%', i2:.26},
-    'scale':         {r:'52%', i:.26, shape:'circle',          r2:'0%',  i2:0},
-    'silk':          {r:'48%', i:.44, shape:'ellipse 30% 66%', r2:'14%', i2:.20},
-    'fur':           {r:'74%', i:.22, shape:'circle',          r2:'0%',  i2:0},
-    'knit':          {r:'68%', i:.16, shape:'circle',          r2:'0%',  i2:0},
-    'weave':         {r:'62%', i:.18, shape:'circle',          r2:'0%',  i2:0}
+  var SP_FONT = {
+    serif: {f:'"Cormorant Garamond",Georgia,serif', s:'54px', w:300, t:'.20em'},  // гладкое, дорогое
+    heavy: {f:'"Yeseva One",Georgia,serif',         s:'38px', w:400, t:'.14em'},  // пёстрое, нужен вес
+    mono:  {f:'"Fira Mono",monospace',              s:'33px', w:400, t:'.30em'},  // техническое
+    geo:   {f:'"Manrope",Arial,sans-serif',         s:'42px', w:200, t:'.32em'}   // матовое, мягкое
   };
 
-  // ореол под названием: на светлой пестроте светлый, на тёмной тёмный
+  var SP_TEX = [
+    {id:'brown-leather', acc:'#9FD3E3', halo:'dark',  f:'geo'},
+    {id:'olive-knit',    acc:'#F2A9C4', halo:'dark',  f:'geo'},
+    {id:'lace-leather',  acc:'#E0374B', halo:'dark',  f:'mono'},
+    {id:'zebra',         acc:'#C4587A', halo:'both',  f:'heavy'},
+    {id:'python',        acc:'#7A2E44', halo:'light', f:'heavy'},
+    {id:'chiffon',       acc:'#E7A6B8', halo:'dark',  f:'serif'},
+    {id:'croc',          acc:'#9FD8C0', halo:'dark',  f:'serif'},
+    {id:'black-fur',     acc:'#E7A6B8', halo:'dark',  f:'geo'},
+    {id:'leopard',       acc:'#B9A6E8', halo:'dark',  f:'heavy'},
+    {id:'wine-leather',  acc:'#E3C77A', halo:'dark',  f:'serif'},
+    {id:'denim',         acc:'#F2B79A', halo:'dark',  f:'mono'}
+  ];
+
+  // ореол: на светлой пестроте светлый, на тёмной тёмный, на зебре оба сразу
   var SP_HALO = {
     dark:  '0 1px 0 rgba(255,255,255,.26), 0 2px 10px rgba(0,0,0,.62), 0 0 26px rgba(0,0,0,.45)',
     light: '0 1px 0 rgba(255,255,255,.8), 0 0 12px rgba(255,252,248,.9), 0 1px 4px rgba(0,0,0,.3)',
@@ -1634,7 +1609,7 @@ body{
   };
 
   var spBox   = document.getElementById('sp-slides');
-  var spCards = SP_TEX.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, 5);
+  var spCards = SP_TEX.slice().sort(function(){ return Math.random() - 0.5; });  // порядок новый, набор полный
   var spSlides = spCards.map(function(t, n){
     var d = document.createElement('div');
     d.className = 'sp-slide' + (n === 0 ? ' on' : '');
@@ -1651,57 +1626,50 @@ body{
     spSlides[spI].classList.remove('on');
     spI = (n + spCards.length) % spCards.length;
     spSlides[spI].classList.add('on');
-    var t = spCards[spI], m = SP_MAT[t.mat] || SP_MAT['leather-matte'];
-    splash.style.setProperty('--r', m.r);
-    splash.style.setProperty('--i', m.i);
-    splash.style.setProperty('--shape', m.shape);
-    splash.style.setProperty('--r2', m.r2);
-    splash.style.setProperty('--i2', m.i2);
-    splash.style.setProperty('--acc', t.acc);
-    splash.style.setProperty('--lw', t.w);
+    var t = spCards[spI], f = SP_FONT[t.f];
+    splash.style.setProperty('--acc',  t.acc);
     splash.style.setProperty('--halo', SP_HALO[t.halo]);
+    splash.style.setProperty('--lf',   f.f);
+    splash.style.setProperty('--lsz',  f.s);
+    splash.style.setProperty('--lw',   f.w);
+    splash.style.setProperty('--lt',   f.t);
   }
 
-  // ── свет ──
-  var spTouched = false;                       // палец или наклон перебивают автоход
-  function spLight(x, y){
+  // ── глубина: текстура едет против наклона ──
+  var spTouched = false;
+  function spDepth(x, y){
+    if (still()) return;
     x = Math.max(6, Math.min(94, x));
     y = Math.max(8, Math.min(88, y));
-    splash.style.setProperty('--mx', x + '%');
-    splash.style.setProperty('--my', y + '%');
-    if (still()) return;
-    splash.style.setProperty('--px', ((50 - x) * 0.14).toFixed(1) + 'px');
-    splash.style.setProperty('--py', ((50 - y) * 0.10).toFixed(1) + 'px');
+    splash.style.setProperty('--px', ((50 - x) * 0.16).toFixed(1) + 'px');
+    splash.style.setProperty('--py', ((50 - y) * 0.12).toFixed(1) + 'px');
   }
 
   splash.addEventListener('pointermove', function(e){
     if (entered) return;
     spTouched = true;
     var b = splash.getBoundingClientRect();
-    spLight((e.clientX - b.left) / b.width * 100, (e.clientY - b.top) / b.height * 100);
+    spDepth((e.clientX - b.left) / b.width * 100, (e.clientY - b.top) / b.height * 100);
   });
 
   function spTilt(e){
     if (e.gamma == null || entered) return;
     spTouched = true;
-    spLight(50 + e.gamma * 1.1, 40 + (e.beta - 45) * 0.8);
+    spDepth(50 + e.gamma * 1.1, 40 + (e.beta - 45) * 0.8);
   }
 
-  // пока датчиков нет — пятно ходит само, медленно и не по кругу
-  function spOrbit(ms){
+  function spDrift(ms){
     if (entered) return;
-    if (!spTouched) spLight(50 + Math.sin(ms / 2600) * 26, 36 + Math.cos(ms / 3700) * 15);
-    requestAnimationFrame(spOrbit);
+    if (!spTouched) spDepth(50 + Math.sin(ms / 3400) * 26, 40 + Math.cos(ms / 4600) * 15);
+    requestAnimationFrame(spDrift);
   }
 
-  // iOS отдаёт наклон только после явного разрешения, а разрешение просит жест.
-  // Единственный жест на заставке — вход, поэтому спрашиваем один раз после входа:
-  // эта заставка доживёт без наклона, все следующие получат его.
+  // iOS отдаёт наклон только после жеста, а единственный жест на заставке — вход.
+  // Спрашиваем один раз после входа: эта заставка доживёт без наклона, следующие получат.
   function spAskTilt(){
     var D = window.DeviceOrientationEvent;
-    if (!D || flags.tilt === false) return;
+    if (!D || flags.tilt === false || flags.tilt === true) return;
     if (typeof D.requestPermission !== 'function') return;
-    if (flags.tilt === true) return;
     setTimeout(function(){
       D.requestPermission().then(function(res){
         flags.tilt = (res === 'granted');
@@ -1717,13 +1685,11 @@ body{
       window.addEventListener('deviceorientation', spTilt);
     }
     spShow(0);
-    spLight(50, 34);
     if (!still()){
-      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 1800);
-      requestAnimationFrame(spOrbit);
+      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 900);
+      requestAnimationFrame(spDrift);
     }
   })();
-
 
   // куда открывать приложение
   function route(){
