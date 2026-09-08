@@ -14,7 +14,7 @@
 <link rel="icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@300&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400;500;600&family=Fira+Mono&display=swap">
 
 </head>
 <body>
@@ -33,7 +33,8 @@
   --f-accent:"Playfair Display",Georgia,"Times New Roman",serif;
   --f-body:"Onest","Helvetica Neue",Arial,sans-serif;
   --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
-  --f-logo:"Unbounded","Onest",Arial,sans-serif;
+  --f-logo:"Cormorant Garamond",Georgia,serif;
+  --f-sp-mono:"Fira Mono","SFMono-Regular",Consolas,monospace;
 }
 
 *,*::before,*::after{box-sizing:border-box;}
@@ -974,211 +975,130 @@ body{
   padding:18px 20px 44px;
 }
 
-/* ─────────── экран открытия ─────────── */
+/* ─────────── экран открытия · текстуры ─────────── */
 /*
-   Хронометраж:
-   0,26 с — разом: верхняя панель, VIDNO, «Осень любит слои»,
-            падающие фразы и приглашение листать со стрелкой
-   1,70 с — «Ты не выбираешь погоду.»
-   2,70 с — «Гардероб выбирает.»
-   8,10 с — уходят только эти две строки, остальное остаётся навсегда
+   Фон — фотографии тканей во весь экран, кадры меняются каждые 1,8 с.
+   Свет: горячее пятно идёт за наклоном телефона; ширина и сила пятна
+   заданы материалом — у лака узкое и резкое, у меха широкое и слабое.
+   VIDNO берёт контрастный цвет от ткани, а на пёстрых кадрах ещё и
+   тяжелеет и получает ореол — иначе тонкая антиква тонет в рисунке.
 */
 
 .splash{
   position:absolute;
   inset:0;
   z-index:5;
-  background:var(--bg2);
-  display:flex;
-  flex-direction:column;
-  padding:0 20px 34px;
+  background:#0C080D;
   overflow:hidden;
   cursor:grab;
   touch-action:none;          /* палец тянет заставку, а не страницу */
   -webkit-tap-highlight-color:transparent;
   transition:opacity .34s ease-in, transform .58s cubic-bezier(.22,.61,.36,1);
+  --mx:50%; --my:34%; --px:0px; --py:0px;
 }
 .splash[hidden]{display:none;}
 .splash.is-leaving{opacity:0;transform:translate3d(0,-28px,0);pointer-events:none;}
 .splash:active{cursor:grabbing;}
 .splash.is-dragging{transition:none;}
-.splash:focus-visible{outline:1px solid var(--accent);outline-offset:-4px;}
+.splash:focus-visible{outline:1px solid var(--acc,#D98FA4);outline-offset:-4px;}
 
-@keyframes appear{from{opacity:0;transform:translate3d(0,6px,0);}to{opacity:1;transform:none;}}
-@keyframes vanish{from{opacity:1;}to{opacity:0;}}
-@keyframes layer-in{from{opacity:0;}to{opacity:1;}}
-@keyframes breathe{0%,100%{opacity:1;}50%{opacity:.42;}}
-@keyframes nudge{0%,100%{transform:translate3d(0,-2px,0);}50%{transform:translate3d(0,3px,0);}}
-@keyframes rise{from{opacity:.3;transform:translate3d(0,16px,0);}to{opacity:1;transform:none;}}
+.sp-slide{position:absolute;inset:0;opacity:0;transition:opacity .34s ease;}
+.sp-slide.on{opacity:1;}
+.sp-slide i{
+  position:absolute;inset:-7%;display:block;
+  background-position:center;background-size:cover;background-repeat:no-repeat;
+  transform:translate3d(var(--px),var(--py),0);
+  will-change:transform;
+}
+
+.sp-spec{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(var(--shape,circle) at var(--mx) var(--my),
+    rgba(255,249,242,var(--i,.3)) 0%,
+    rgba(255,246,236,calc(var(--i,.3) * .34)) 34%,
+    rgba(255,246,236,0) var(--r,55%));
+}
+.sp-core{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(circle at var(--mx) var(--my),
+    rgba(255,252,247,var(--i2,0)) 0%, rgba(255,252,247,0) var(--r2,14%));
+}
+.sp-shade{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;
+  background:radial-gradient(circle at calc(100% - var(--mx)) calc(100% - var(--my)),
+    rgba(24,16,20,.42) 0%, rgba(24,16,20,0) 62%);
+}
+.sp-veil{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(12,8,13,.56) 0%, rgba(12,8,13,.05) 26%,
+                                     rgba(12,8,13,.16) 58%, rgba(12,8,13,.74) 100%);
+}
+.sp-grain{position:absolute;inset:-25%;opacity:.06;pointer-events:none;}
 
 /* верхняя строка — как системная панель телефона */
 .statusstrip{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:16px;
-  opacity:0;
+  position:absolute;top:0;left:0;right:0;z-index:3;
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  padding:max(64px, calc(env(safe-area-inset-top, 0px) + 14px)) 20px 0;
 }
 .statusstrip span{
-  font-family:var(--f-mono);
-  font-size:8px;
-  font-weight:400;
-  text-transform:uppercase;
-  letter-spacing:.18em;
-  line-height:1;
-  color:var(--grey);
+  font-family:var(--f-sp-mono);
+  font-size:8px;font-weight:400;text-transform:uppercase;
+  letter-spacing:.18em;line-height:1;color:rgba(247,238,240,.72);
 }
 
-.splash-top{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:18px;
-  margin-top:36px;
-}
+/* ── название и одна постоянная строка ── */
 
+.sp-mark{
+  position:absolute;left:0;right:0;top:46%;
+  transform:translateY(-50%);
+  z-index:3;text-align:center;
+  color:var(--acc,#F7EFF1);
+  transition:color .5s ease;
+}
 .logo{
+  margin:0;
   font-family:var(--f-logo);
-  font-weight:300;
-  font-size:44px;
-  letter-spacing:.16em;
+  font-weight:var(--lw,300);
+  font-size:54px;
+  letter-spacing:.20em;
+  text-indent:.20em;
   line-height:1;
-  color:var(--ink);
-  margin:0;
-  padding-left:.16em;
-  opacity:0;
+  text-shadow:var(--halo);
+  transition:font-weight .3s ease;
 }
-
-.tagline{
-  width:100%;
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:16px;
+.sp-line{
+  margin:17px 0 0;
+  font-family:var(--f-sp-mono);
+  font-size:8px;font-weight:400;
+  letter-spacing:.28em;text-indent:.28em;text-transform:uppercase;
+  line-height:1.6;opacity:.8;
+  text-shadow:var(--halo);
 }
-.tagline span{
-  opacity:0;
-  font-family:var(--f-mono);
-  font-size:8px;
-  font-weight:400;
-  letter-spacing:.18em;
-  line-height:1.55;
-  color:var(--ink);
-}
-.tagline span:last-child{text-align:right;}
-
-/* служебные строки того же кегля, что и падающие фразы: даём им сплошную
-   подложку цветом фона — фраза уходит за них, а не сквозь них */
-.statusstrip span,
-.tagline span,
-.hint-wrap{
-  background:var(--bg2);
-  outline:3px solid var(--bg2);   /* перекрывает, не сдвигая вёрстку */
-}
-.hint-wrap{width:fit-content;margin-left:auto;margin-right:auto;}
-
-/* ── падающий фоновый слой ── */
-
-.fall-layer{
-  position:absolute;
-  inset:0;
-  z-index:0;
-  overflow:hidden;
-  pointer-events:none;
-  opacity:0;
-  /* фразы идут во всю высоту, мягко тают только у самых краёв экрана */
-  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 5%,#000 94%,transparent 100%);
-  mask-image:linear-gradient(to bottom,transparent 0%,#000 5%,#000 94%,transparent 100%);
-}
-.fall{
-  position:absolute;
-  top:0;
-  white-space:nowrap;
-  font-family:var(--f-mono);
-  font-size:8px;
-  font-weight:400;
-  text-transform:uppercase;
-  letter-spacing:.18em;
-  line-height:1.8;
-  color:rgba(28,20,15,.25);
-  will-change:transform;
-  animation-name:fall;
-  animation-duration:78s;          /* общий цикл: старт новой фразы каждые 3,9 с */
-  animation-timing-function:linear;
-  animation-iteration-count:infinite;
-}
-.fall-hot{color:rgba(190,58,36,.40);}
-
-/* одна скорость на всех — 39 с на экран. Разная скорость приводит к обгонам,
-   а двухстрочные фразы при обгоне слипаются в кашу */
-@keyframes fall{0%{transform:translate3d(0,-12vh,0);}50%{transform:translate3d(0,112vh,0);}100%{transform:translate3d(0,112vh,0);}}
-
-.splash-top,.splash-mid,.splash-foot,.statusstrip{position:relative;z-index:1;}
-.splash-mid{flex:1 1 auto;}
-
-/* ── нижний блок ── */
-
-.splash-foot{display:flex;flex-direction:column;}
-
-.opening-title{
-  font-family:var(--f-title);
-  font-weight:400;
-  font-size:60px;
-  line-height:1.02;
-  letter-spacing:-.015em;
-  color:var(--ink);
-  margin:0;
-  opacity:0;
-}
-.opening-title span{display:block;}
 
 .hint-wrap{
-  margin-top:36px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  opacity:0;
+  position:absolute;left:0;right:0;
+  bottom:calc(26px + env(safe-area-inset-bottom, 0px));
+  z-index:3;display:flex;flex-direction:column;align-items:center;gap:9px;
 }
-.hint-arrow{color:var(--grey);display:block;will-change:transform;}
-
 .hint{
-  margin:0;
-  text-align:center;
-  font-family:var(--f-mono);
-  font-size:8px;
-  font-weight:400;
-  letter-spacing:.18em;
-  line-height:1.55;
-  color:var(--grey);
+  margin:0;text-align:center;
+  font-family:var(--f-sp-mono);
+  font-size:8px;font-weight:400;letter-spacing:.22em;line-height:1.55;
+  color:rgba(247,238,240,.66);
 }
+.hint-arrow{color:rgba(247,238,240,.5);display:block;will-change:transform;}
 
-/* ── хронометраж ── */
+@keyframes rise{from{opacity:.3;transform:translate3d(0,16px,0);}to{opacity:1;transform:none;}}
+@keyframes nudge{0%,100%{transform:translate3d(0,-2px,0);}50%{transform:translate3d(0,3px,0);}}
 
 @media (prefers-reduced-motion:no-preference){
-  /* всё, кроме двух боковых строк, появляется разом и больше не уходит */
-  .statusstrip,
-  .logo,
-  .opening-title{animation:appear .42s ease both .26s;}
-  .fall-layer   {animation:layer-in .5s ease both .26s;}
-  .hint-wrap    {animation:appear .42s ease both .26s, breathe 4.2s ease-in-out infinite .9s;}
-  .hint-arrow   {animation:nudge 2.6s ease-in-out infinite .9s;}
-
-  /* две боковые строки: одна за другой с секундной паузой, через пять секунд уходят */
-  .tagline span:first-child{animation:appear .42s ease both 1.7s, vanish .9s ease forwards 8.1s;}
-  .tagline span:last-child {animation:appear .42s ease both 2.7s, vanish .9s ease forwards 8.1s;}
+  .hint-arrow{animation:nudge 2.6s ease-in-out infinite .9s;}
   .phone.is-entering .stage,
   .phone.is-entering .tabbar{animation:rise .62s cubic-bezier(.22,.61,.36,1) both;}
 }
-
-/* без анимаций: экран сразу собран, три фразы стоят на месте */
 @media (prefers-reduced-motion:reduce){
-  .statusstrip,.logo,.opening-title,.hint-wrap,.fall-layer{opacity:1;}
-  .tagline span{opacity:0;}
-  .fall{animation:none;}
-  .fall:nth-child(4){transform:translate3d(0,32vh,0);}
-  .fall:nth-child(9){transform:translate3d(0,50vh,0);}
-  .fall:nth-child(15){transform:translate3d(0,68vh,0);}
+  .sp-slide i{transform:none;}
 }
 
 .center{text-align:center;}
@@ -1188,54 +1108,28 @@ body{
 
   <!-- ЭКРАН ОТКРЫТИЯ · без нижней панели -->
   <div class="splash" id="splash" tabindex="0" role="button" aria-label="Войти в приложение">
-    <div class="statusbar"></div>
-
-      <div class="fall-layer" aria-hidden="true">
-        <span class="fall" style="left:43.4px;animation-delay:-0.34s">Опять чёрное?<br>Ну ладно.</span>
-        <span class="fall" style="left:107.9px;animation-delay:-4.16s">Возьми зонт. Не бери зонт.<br>Возьми зонт.</span>
-        <span class="fall" style="left:132.0px;animation-delay:-7.72s">Шарф. Кашемир.<br>Дар прошлой зимы. Даритель забыт.</span>
-        <span class="fall" style="left:231.0px;animation-delay:-11.46s">Нет, тебе идёт.<br>Правда идёт. Иди уже.</span>
-        <span class="fall" style="left:47.8px;animation-delay:-15.61s">Ты правда это наденешь?<br>Ладно, наденешь.</span>
-        <span class="fall" style="left:59.5px;animation-delay:-19.40s">Ничего не подходит. Всё подходит.<br>Ничего не подходит.</span>
-        <span class="fall" style="left:79.9px;animation-delay:-23.68s">Платье. Шёлк.<br>Куплено на свадьбу. Свадьба была не твоя.</span>
-        <span class="fall" style="left:220.3px;animation-delay:-27.10s">Отлично выглядишь. Да.<br>Всё, хватит зеркала.</span>
-        <span class="fall" style="left:85.9px;animation-delay:-31.18s">Опять эти джинсы.<br>Ну а какие ещё.</span>
-        <span class="fall" style="left:111.4px;animation-delay:-35.18s">Всё, ухожу. Ещё раз посмотрю.<br>Всё, ухожу.</span>
-        <span class="fall" style="left:125.3px;animation-delay:-39.41s">Туфли. Замша. Надеты один раз.<br>Тот вечер того стоил.</span>
-        <span class="fall" style="left:241.0px;animation-delay:-42.90s">Тебе идёт. Всем идёт.<br>Пойдём уже.</span>
-        <span class="fall" style="left:32.0px;animation-delay:-46.58s">Ну и что, что не сочетается.<br>Сочетается.</span>
-        <span class="fall fall-hot" style="left:112.3px;animation-delay:-50.96s">Утром холодно. Днём жарко.<br>Утром холодно.</span>
-        <span class="fall" style="left:153.7px;animation-delay:-54.72s">Футболка. Хлопок. Чужая.<br>Возвращать уже поздно.</span>
-        <span class="fall" style="left:120.3px;animation-delay:-58.25s">Ты не опаздываешь. Ты уже опоздала.<br>Но выглядишь хорошо.</span>
-        <span class="fall" style="left:59.4px;animation-delay:-62.81s">Может, что-то поярче? Нет?<br>Ну нет так нет.</span>
-        <span class="fall fall-hot" style="left:75.0px;animation-delay:-66.78s">Обещали дождь. Не обещали дождь.<br>Обещали.</span>
-        <span class="fall fall-hot" style="left:175.3px;animation-delay:-70.51s">Похолодает. Не сегодня.<br>Но похолодает.</span>
-        <span class="fall" style="left:271.4px;animation-delay:-74.50s">Идёт. Не идёт.<br>Идёт.</span>
-      </div>
+    <div class="sp-slides" id="sp-slides"></div>
+    <div class="sp-spec"></div>
+    <div class="sp-core"></div>
+    <div class="sp-shade"></div>
+    <div class="sp-veil"></div>
+    <svg class="sp-grain" aria-hidden="true"><filter id="sp-gr"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#sp-gr)"/></svg>
 
     <div class="statusstrip">
-      <span>Пятница</span>
-      <span>04.09 · +23°</span>
+      <span id="sp-day">Вторник</span>
+      <span id="sp-meta">08.09</span>
     </div>
 
-    <div class="splash-top">
+    <div class="sp-mark">
       <p class="logo">VIDNO</p>
-      <p class="tagline">
-        <span>Ты не выбираешь погоду.</span>
-        <span>Гардероб выбирает.</span>
-      </p>
+      <p class="sp-line">Осень любит слои</p>
     </div>
 
-    <div class="splash-mid"></div>
-
-    <div class="splash-foot">
-      <h1 class="opening-title"><span>Осень</span><span>любит</span><span>слои</span></h1>
-          <div class="hint-wrap">
-        <p class="hint">Листай, чтобы войти</p>
-        <svg class="hint-arrow" width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true">
-          <path d="M6.5 0V16M6.5 16L1 10.5M6.5 16L12 10.5" stroke="currentColor" stroke-width="1"/>
-        </svg>
-      </div>
+    <div class="hint-wrap">
+      <p class="hint">Листай, чтобы войти</p>
+      <svg class="hint-arrow" width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true">
+        <path d="M6.5 0V16M6.5 16L1 10.5M6.5 16L12 10.5" stroke="currentColor" stroke-width="1"/>
+      </svg>
     </div>
   </div>
 
@@ -1249,7 +1143,7 @@ body{
       <div class="today-head">
         <span class="mono">VIDNO</span>
         <span class="today-me">
-          <span class="mono grey">Пятница</span>
+          <span class="mono grey" id="today-day">Пятница</span>
           <span class="avatar" aria-hidden="true">А</span>
         </span>
       </div>
@@ -1258,15 +1152,15 @@ body{
         <div class="hero-pic"></div>
         <svg class="hero-grain" aria-hidden="true"><filter id="grain-hero"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#grain-hero)"/></svg>
         <div class="hero-veil" aria-hidden="true"></div>
-        <span class="mono hero-tag hero-tag--l">[ 04.09 · осень ]</span>
-        <span class="mono hero-tag hero-tag--r">+23°</span>
+        <span class="mono hero-tag hero-tag--l" id="hero-date">[ 04.09 · осень ]</span>
+        <span class="mono hero-tag hero-tag--r" id="hero-temp"></span>
         <h1 class="hero-title">Осень любит<em>слои</em></h1>
       </div>
 
       <section class="wx">
         <div class="wx-head">
           <span class="mono accent">[ погода ]</span>
-          <span class="mono grey">утром 12 · днём 23</span>
+          <span class="mono grey" id="wx-range">—</span>
         </div>
         <div class="wx-rule"></div>
         <div class="wx-lines" id="wx-lines"></div>
@@ -1594,6 +1488,8 @@ body{
   }
   function finish(){
     splash.hidden = true;
+    clearInterval(spTimer);
+    spAskTilt();
     var t = document.querySelector('.tab[data-screen="' + landed + '"]');
     if (t) t.focus({preventScroll:true});
   }
@@ -1685,6 +1581,7 @@ body{
     if (wheel > splash.offsetHeight * THRESHOLD) enterFromDrag();
     else wheelTimer = setTimeout(function(){ wheel = 0; snapBack(); }, 260);
   }, {passive:true});
+
   // ═══════════ состояние, маршрут и онбординг ═══════════
 
   var LIMIT = 15, WOW = 3;                     // вау на третьей вещи, подборки с пятнадцатой
@@ -1698,6 +1595,135 @@ body{
   function remember(){
     try { localStorage.setItem('vidno', JSON.stringify(flags)); } catch(_){}
   }
+
+  // ═══════════ заставка на текстурах ═══════════
+  // Колода: из одиннадцати тканей на каждый запуск берём пять случайных.
+  // Одиннадцать человек всё равно не увидит — заставка живёт секунд восемь.
+
+  var SP_TEX = [
+    {id:'brown-leather', mat:'leather-matte', acc:'#9FD3E3', w:300, halo:'dark'},
+    {id:'olive-knit',    mat:'knit',          acc:'#F2A9C4', w:400, halo:'dark'},
+    {id:'lace-leather',  mat:'leather-gloss', acc:'#E0374B', w:500, halo:'dark'},
+    {id:'zebra',         mat:'fur',           acc:'#C4587A', w:600, halo:'both'},
+    {id:'python',        mat:'scale',         acc:'#7A2E44', w:600, halo:'light'},
+    {id:'chiffon',       mat:'silk',          acc:'#E7A6B8', w:300, halo:'dark'},
+    {id:'croc',          mat:'scale-gloss',   acc:'#9FD8C0', w:400, halo:'dark'},
+    {id:'black-fur',     mat:'fur',           acc:'#E7A6B8', w:300, halo:'dark'},
+    {id:'leopard',       mat:'fur',           acc:'#B9A6E8', w:600, halo:'dark'},
+    {id:'wine-leather',  mat:'leather-gloss', acc:'#E3C77A', w:300, halo:'dark'},
+    {id:'denim',         mat:'weave',         acc:'#F2B79A', w:400, halo:'dark'}
+  ];
+
+  // характер блика по материалу
+  var SP_MAT = {
+    'leather-gloss': {r:'42%', i:.46, shape:'circle',          r2:'15%', i2:.24},
+    'leather-matte': {r:'58%', i:.30, shape:'circle',          r2:'0%',  i2:0},
+    'scale-gloss':   {r:'44%', i:.48, shape:'circle',          r2:'15%', i2:.26},
+    'scale':         {r:'52%', i:.26, shape:'circle',          r2:'0%',  i2:0},
+    'silk':          {r:'48%', i:.44, shape:'ellipse 30% 66%', r2:'14%', i2:.20},
+    'fur':           {r:'74%', i:.22, shape:'circle',          r2:'0%',  i2:0},
+    'knit':          {r:'68%', i:.16, shape:'circle',          r2:'0%',  i2:0},
+    'weave':         {r:'62%', i:.18, shape:'circle',          r2:'0%',  i2:0}
+  };
+
+  // ореол под названием: на светлой пестроте светлый, на тёмной тёмный
+  var SP_HALO = {
+    dark:  '0 1px 0 rgba(255,255,255,.26), 0 2px 10px rgba(0,0,0,.62), 0 0 26px rgba(0,0,0,.45)',
+    light: '0 1px 0 rgba(255,255,255,.8), 0 0 12px rgba(255,252,248,.9), 0 1px 4px rgba(0,0,0,.3)',
+    both:  '0 0 3px rgba(0,0,0,.85), 0 0 18px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.32)'
+  };
+
+  var spBox   = document.getElementById('sp-slides');
+  var spCards = SP_TEX.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, 5);
+  var spSlides = spCards.map(function(t, n){
+    var d = document.createElement('div');
+    d.className = 'sp-slide' + (n === 0 ? ' on' : '');
+    var im = document.createElement('i');
+    im.style.backgroundImage = 'url("tex-' + t.id + '.jpg")';
+    d.appendChild(im);
+    spBox.appendChild(d);
+    return d;
+  });
+
+  var spI = 0, spTimer = null;
+
+  function spShow(n){
+    spSlides[spI].classList.remove('on');
+    spI = (n + spCards.length) % spCards.length;
+    spSlides[spI].classList.add('on');
+    var t = spCards[spI], m = SP_MAT[t.mat] || SP_MAT['leather-matte'];
+    splash.style.setProperty('--r', m.r);
+    splash.style.setProperty('--i', m.i);
+    splash.style.setProperty('--shape', m.shape);
+    splash.style.setProperty('--r2', m.r2);
+    splash.style.setProperty('--i2', m.i2);
+    splash.style.setProperty('--acc', t.acc);
+    splash.style.setProperty('--lw', t.w);
+    splash.style.setProperty('--halo', SP_HALO[t.halo]);
+  }
+
+  // ── свет ──
+  var spTouched = false;                       // палец или наклон перебивают автоход
+  function spLight(x, y){
+    x = Math.max(6, Math.min(94, x));
+    y = Math.max(8, Math.min(88, y));
+    splash.style.setProperty('--mx', x + '%');
+    splash.style.setProperty('--my', y + '%');
+    if (still()) return;
+    splash.style.setProperty('--px', ((50 - x) * 0.14).toFixed(1) + 'px');
+    splash.style.setProperty('--py', ((50 - y) * 0.10).toFixed(1) + 'px');
+  }
+
+  splash.addEventListener('pointermove', function(e){
+    if (entered) return;
+    spTouched = true;
+    var b = splash.getBoundingClientRect();
+    spLight((e.clientX - b.left) / b.width * 100, (e.clientY - b.top) / b.height * 100);
+  });
+
+  function spTilt(e){
+    if (e.gamma == null || entered) return;
+    spTouched = true;
+    spLight(50 + e.gamma * 1.1, 40 + (e.beta - 45) * 0.8);
+  }
+
+  // пока датчиков нет — пятно ходит само, медленно и не по кругу
+  function spOrbit(ms){
+    if (entered) return;
+    if (!spTouched) spLight(50 + Math.sin(ms / 2600) * 26, 36 + Math.cos(ms / 3700) * 15);
+    requestAnimationFrame(spOrbit);
+  }
+
+  // iOS отдаёт наклон только после явного разрешения, а разрешение просит жест.
+  // Единственный жест на заставке — вход, поэтому спрашиваем один раз после входа:
+  // эта заставка доживёт без наклона, все следующие получат его.
+  function spAskTilt(){
+    var D = window.DeviceOrientationEvent;
+    if (!D || flags.tilt === false) return;
+    if (typeof D.requestPermission !== 'function') return;
+    if (flags.tilt === true) return;
+    setTimeout(function(){
+      D.requestPermission().then(function(res){
+        flags.tilt = (res === 'granted');
+        remember();
+        if (flags.tilt) window.addEventListener('deviceorientation', spTilt);
+      }).catch(function(){});
+    }, 700);
+  }
+
+  (function spStart(){
+    var D = window.DeviceOrientationEvent;
+    if (D && (typeof D.requestPermission !== 'function' || flags.tilt === true)){
+      window.addEventListener('deviceorientation', spTilt);
+    }
+    spShow(0);
+    spLight(50, 34);
+    if (!still()){
+      spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 1800);
+      requestAnimationFrame(spOrbit);
+    }
+  })();
+
 
   // куда открывать приложение
   function route(){
@@ -2019,7 +2045,7 @@ body{
     var txt = LOOK_TEXT[lk.tag] || LOOK_TEXT['первый образ'];
 
     lookNum.textContent = pad(i + 1) + ' / ' + pad(looks.length);
-    lookTag.textContent = lk.tag + ' · пятница';
+    lookTag.textContent = lk.tag + ' · ' + weekday;
     lookTitle.innerHTML = '';
     lookTitle.appendChild(document.createTextNode(txt.head));
     var em = document.createElement('em');
@@ -2096,7 +2122,6 @@ body{
   var ideasRail  = document.getElementById('ideas-rail');
   var ideasFeed  = document.getElementById('ideas-feed');
 
-  var WX = ['Ясно, к вечеру ветрено.', 'Утром двенадцать, днём двадцать три.', 'Вот такая вот фигня собачка.'];
   var OCCASIONS = ['первый образ', 'на учёбу', 'вечер', 'прогулка', 'выходной'];
   var IDEAS = [
     {
@@ -2125,18 +2150,140 @@ body{
     }
   ];
 
-  // ─── погода печатается по строке, один раз в день ───
-  var wxTimer = null;
+  // ═══════════ дата и погода · живые данные ═══════════
+  // Источник — Open-Meteo: бесплатный, без ключа, отвечает из браузера.
+  // Любая ошибка сети не должна ломать экран: показываем последнее известное
+  // или честную заглушку.
 
-  function stamp(){
-    var d = new Date();
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  var WX_URL = 'https://api.open-meteo.com/v1/forecast'
+             + '?latitude=51.672&longitude=39.2103'                       // Воронеж
+             + '&current=temperature_2m,weather_code,wind_speed_10m'
+             + '&daily=temperature_2m_min,temperature_2m_max,weather_code'
+             + '&wind_speed_unit=ms&timezone=Europe%2FMoscow&forecast_days=1';
+
+  var DAYS    = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+  var SEASONS = ['зима','зима','весна','весна','весна','лето','лето','лето','осень','осень','осень','зима'];
+  var ONES = ['ноль','один','два','три','четыре','пять','шесть','семь','восемь','девять',
+              'десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать',
+              'шестнадцать','семнадцать','восемнадцать','девятнадцать'];
+  var TENS = {2:'двадцать', 3:'тридцать', 4:'сорок'};
+
+  var LAST_LINE = 'Вот такая вот фигня собачка.';      // постоянная третья строка
+
+  var spDay    = document.getElementById('sp-day');
+  var spMeta   = document.getElementById('sp-meta');
+  var todayDay = document.getElementById('today-day');
+  var heroDate = document.getElementById('hero-date');
+  var heroTemp = document.getElementById('hero-temp');
+  var wxRange  = document.getElementById('wx-range');
+
+  var weekday = DAYS[new Date().getDay()].toLowerCase();
+  var wx      = null;                                   // {day, cur, code, wind, min, max}
+  var wxLines = ['Погода пока не подтянулась.', 'Обновится, когда будет сеть.', LAST_LINE];
+  var wxTimer = null;
+  var wxTries = 0;
+
+  function two(n){ return (n < 10 ? '0' : '') + n; }
+
+  function stamp(d){
+    d = d || new Date();
+    return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate());
   }
 
-  function paintWeather(){
+  // числа словами: цифра в этой плашке переключает регистр на учётный
+  function words(n){
+    n = Math.round(n);
+    var sign = n < 0 ? 'минус ' : '';
+    var a = Math.abs(n);
+    if (a < 20) return sign + ONES[a];
+    var t = Math.floor(a / 10), r = a % 10;
+    return sign + (TENS[t] || '') + (r ? ' ' + ONES[r] : '');
+  }
+
+  function sky(code){
+    if (code === 0)  return 'Ясно';
+    if (code <= 2)   return 'Малооблачно';
+    if (code === 3)  return 'Пасмурно';
+    if (code <= 48)  return 'Туман';
+    if (code <= 57)  return 'Морось';
+    if (code <= 67)  return 'Дождь';
+    if (code <= 77)  return 'Снег';
+    if (code <= 82)  return 'Ливни';
+    if (code <= 86)  return 'Снегопад';
+    return 'Гроза';
+  }
+
+  function degrees(t){
+    var n = Math.round(t);
+    return (n > 0 ? '+' : '') + n + '°';
+  }
+
+  function onToday(){
+    var scr = document.getElementById('s-today');
+    return scr && !scr.hidden;
+  }
+
+  // подписи с датой пересчитываются при каждом открытии приложения
+  function paintDate(){
+    var d = new Date();
+    var date = two(d.getDate()) + '.' + two(d.getMonth() + 1);
+    weekday = DAYS[d.getDay()].toLowerCase();
+    if (spDay)    spDay.textContent = DAYS[d.getDay()];
+    if (todayDay) todayDay.textContent = DAYS[d.getDay()];
+    if (heroDate) heroDate.textContent = '[ ' + date + ' · ' + SEASONS[d.getMonth()] + ' ]';
+    if (spMeta)   spMeta.textContent = date + (wx ? ' · ' + degrees(wx.cur) : '');
+  }
+
+  function paintNumbers(){
+    if (!wx) return;
+    if (heroTemp) heroTemp.textContent = degrees(wx.cur);
+    if (wxRange)  wxRange.textContent  = 'утром ' + Math.round(wx.min) + ' · днём ' + Math.round(wx.max);
+    wxLines = [
+      sky(wx.code) + (wx.wind >= 7 ? ', ветрено.' : '.'),
+      'Утром ' + words(wx.min) + ', днём ' + words(wx.max) + '.',
+      LAST_LINE
+    ];
+    paintDate();
+  }
+
+  function loadWx(){
+    try {
+      var raw = localStorage.getItem('vidno-wx');
+      if (raw) wx = JSON.parse(raw);
+    } catch(_){}
+    if (wx) paintNumbers();
+  }
+
+  function fetchWx(){
+    if (!window.fetch) return;
+    fetch(WX_URL, {cache: 'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (!j || !j.current || !j.daily) throw new Error('пусто');
+        wx = {
+          day:  stamp(),
+          cur:  j.current.temperature_2m,
+          wind: j.current.wind_speed_10m,
+          code: j.daily.weather_code[0],
+          min:  j.daily.temperature_2m_min[0],
+          max:  j.daily.temperature_2m_max[0]
+        };
+        try { localStorage.setItem('vidno-wx', JSON.stringify(wx)); } catch(_){}
+        paintNumbers();
+        paintWeather(!onToday());          // виден экран — можно печатать, нет — тихо подставить
+      })
+      .catch(function(){
+        if (wxTries++ < 1) setTimeout(fetchWx, 4000);   // одна повторная попытка
+      });
+  }
+
+  // ─── погода печатается по строке, один раз в день ───
+
+  function paintWeather(instant){
     clearTimeout(wxTimer);
     wxBox.innerHTML = '';
-    var lines = WX.map(function(){
+    var texts = wxLines;
+    var lines = texts.map(function(){
       var el = document.createElement('p');
       el.className = 'wx-line';
       wxBox.appendChild(el);
@@ -2145,8 +2292,9 @@ body{
     var caret = document.createElement('span');
     caret.className = 'caret';
 
-    if (flags.wxDay === stamp() || still()){        // сегодня уже печатали — показываем сразу
-      lines.forEach(function(el, i){ el.textContent = WX[i]; });
+    // печатаем только когда есть настоящие данные и сегодня ещё не печатали
+    if (instant || !wx || flags.wxDay === stamp() || still()){
+      lines.forEach(function(el, i){ el.textContent = texts[i]; });
       lines[lines.length - 1].appendChild(caret);
       return;
     }
@@ -2157,8 +2305,8 @@ body{
     var li = 0, ci = 0;
     lines[0].appendChild(caret);
     (function tick(){
-      if (li >= WX.length) return;
-      var text = WX[li];
+      if (li >= texts.length) return;
+      var text = texts[li];
       if (ci < text.length){
         ci++;
         lines[li].textContent = text.slice(0, ci);
@@ -2167,12 +2315,19 @@ body{
         return;
       }
       li++; ci = 0;
-      if (li < WX.length){
+      if (li < texts.length){
         lines[li].appendChild(caret);
         wxTimer = setTimeout(tick, 460);            // пауза между строками
       }
     })();
   }
+
+  // вернулись в приложение: пересчитать день, при смене суток — обновить погоду
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) return;
+    paintDate();
+    if (!wx || wx.day !== stamp()){ wxTries = 0; fetchWx(); }
+  });
 
   // ─── образы: витрина из загруженных вещей, а не логика сочетаний ───
   function looksFrom(list){
@@ -2294,6 +2449,9 @@ body{
     show('s-build');
   });
 
+  loadWx();
+  paintDate();
+  fetchWx();
   paintWardrobe();
 
 })();
