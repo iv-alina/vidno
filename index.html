@@ -1593,7 +1593,7 @@ body{
   }
 
   // ═══════════ заставка на текстурах ═══════════
-  // Все одиннадцать тканей, ровно 0,1 с на кадр. На девятой секунде ткани
+  // Все одиннадцать тканей, ровно 0,16 с на кадр. На пятой секунде ткани
   // начинают гаснуть, но продолжают меняться до самой черноты.
   // Бликов нет: контраст несёт сама фотография.
   // Начертание названия меняется вместе с материалом — по семьям, не наугад.
@@ -1727,8 +1727,8 @@ body{
     }
     if (still()){ spShow(0); spGoDark(); return; }   // без анимаций сразу чёрное поле
     spShow(Math.floor(Math.random() * spCards.length));
-    spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 100);
-    setTimeout(spGoDark, 9000);
+    spTimer = setInterval(function(){ if (!entered) spShow(spI + 1); }, 160);
+    setTimeout(spGoDark, 5000);
     requestAnimationFrame(spDrift);
   })();
 
