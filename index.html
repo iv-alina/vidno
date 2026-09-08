@@ -1681,7 +1681,7 @@ body{
     spSlides[spI].classList.remove('on');
     spI = (n + spCards.length) % spCards.length;
     spSlides[spI].classList.add('on');
-    if (spDark) return;                     // гаснем — название уже белое и не мигает
+    if (spOff) return;                      // уже чернота — слово стало белым, не трогаем
     var t = spCards[spI], f = SP_FONT[t.f];
     splash.style.setProperty('--acc',  t.acc);
     splash.style.setProperty('--halo', SP_HALO[t.halo]);
@@ -1752,7 +1752,7 @@ body{
     setTimeout(function(){                  // погасло совсем — крутить больше нечего
       spOff = true;
       clearInterval(spTimer);
-    }, 1720);
+    }, 1700);
   }
 
   (function spStart(){
