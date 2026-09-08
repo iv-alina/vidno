@@ -1028,12 +1028,32 @@ body{
 .splash.is-dark .sp-veil,
 .splash.is-dark .sp-grain,
 .splash.is-dark .sp-line{opacity:0;}
-.splash.is-dark .sp-mark{transition:color 1.4s ease, transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;}
+/* цветное слово уходит вместе с тканями... */
+.splash.is-dark .sp-mark{opacity:0;transition:opacity .78s ease;}
+/* ...и через мгновение рождается на чёрном заново: белым, чётким, сияющим */
+.splash.is-lit .sp-mark{opacity:1;transition:opacity 1.15s ease;}
 .splash.is-dark .hint{color:rgba(255,255,255,.82);}
+
+@keyframes shine{
+  0%,100%{text-shadow:0 0 11px rgba(255,255,255,.46), 0 0 34px rgba(255,255,255,.3),
+                      0 0 76px rgba(255,255,255,.16);}
+  50%    {text-shadow:0 0 17px rgba(255,255,255,.76), 0 0 52px rgba(255,255,255,.5),
+                      0 0 116px rgba(255,255,255,.3);}
+}
+@media (prefers-reduced-motion:no-preference){
+  .splash.is-lit .logo{animation:shine 4.4s ease-in-out infinite;}
+}
+
+/* чёрная штора: палец растворяет фон, страница при этом стоит на месте */
+.sp-curtain{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:#000;opacity:0;
+}
 
 /* при входе текст надвигается на человека и пропадает */
 .hint-wrap{transition:transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;}
-.splash.is-leaving .sp-mark{transform:translateY(-50%) scale(3.6);opacity:0;}
+.splash.is-leaving .sp-mark{transform:translateY(-50%) scale(3.6);opacity:0;
+  transition:transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;}
 .splash.is-leaving .hint-wrap{transform:scale(2.6);opacity:0;}
 
 /* верхняя строка — как системная панель телефона */
@@ -1110,6 +1130,7 @@ body{
   <div class="splash" id="splash" tabindex="0" role="button" aria-label="Войти в приложение">
     <div class="sp-slides" id="sp-slides"></div>
     <div class="sp-veil"></div>
+    <div class="sp-curtain" id="sp-curtain"></div>
     <svg class="sp-grain" aria-hidden="true"><filter id="sp-gr"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#sp-gr)"/></svg>
 
     <div class="statusstrip">
@@ -1497,23 +1518,30 @@ body{
     entered = true;
     reveal();
     if (still()){ finish(); return; }
+    dissolve();
     splash.classList.add('is-leaving');
     phone.classList.add('is-entering');
     setTimeout(finish, 680);
   }
 
-  // вход перетаскиванием — заставка продолжает движение пальца
-  function enterFromDrag(offset){
+  // фон уходит в чёрное — на нём остаётся только надвигающееся слово
+  function dissolve(){
+    var c = document.getElementById('sp-curtain');
+    c.style.transition = 'opacity .34s ease';
+    c.style.opacity = '1';
+  }
+
+  // вход протягиванием — страница не сдвигается, растворяется только фон
+  function enterFromDrag(){
     if (entered) return;
     entered = true;
     reveal();
-    if (still()){ finish(); return; }
     splash.classList.remove('is-dragging');
-    splash.style.opacity = '';                  // инлайн перебил бы класс
-    splash.style.transition = 'opacity .46s ease-in';
-    splash.classList.add('is-leaving');         // название надвигается и растворяется
+    if (still()){ finish(); return; }
+    dissolve();                                 // штора доходит до конца, а не отскакивает
+    splash.classList.add('is-leaving');         // слово надвигается ровно из центра
     phone.classList.add('is-entering');
-    setTimeout(finish, 620);
+    setTimeout(finish, 680);
   }
 
   // ─── жест: тянем, а не смахиваем ───
@@ -1521,17 +1549,18 @@ body{
   var THRESHOLD = 0.26;   // протянуть больше четверти экрана
   var FLICK = 0.9;        // либо резко: px/мс
 
+  // палец не тянет страницу: он гасит ткани под словом
+  var curtain = document.getElementById('sp-curtain');
   function paint(px){
     var h = splash.offsetHeight;
-    splash.style.transform = 'translate3d(0,' + (-px) + 'px,0)';
-    splash.style.opacity = String(1 - Math.min(1, px / (h * THRESHOLD)) * 0.6);
+    curtain.style.transition = 'none';
+    curtain.style.opacity = String(Math.min(1, px / (h * THRESHOLD)) * 0.92);
   }
   function snapBack(){
     splash.classList.remove('is-dragging');
-    splash.style.transition = 'opacity .3s ease, transform .42s cubic-bezier(.22,1.1,.36,1)';
-    splash.style.transform = '';
-    splash.style.opacity = '';
-    setTimeout(function(){ splash.style.transition = ''; }, 440);
+    curtain.style.transition = 'opacity .34s ease';
+    curtain.style.opacity = '0';
+    setTimeout(function(){ curtain.style.transition = ''; }, 360);
   }
 
   splash.addEventListener('pointerdown', function(e){
@@ -1620,6 +1649,9 @@ body{
   ];
 
   // ореол: на светлой пестроте светлый, на тёмной тёмный, на зебре оба сразу
+  // ореол белого слова на чёрном — всегда в цвет того, что светится
+  var SP_GLOW = '0 0 14px rgba(255,255,255,.6), 0 0 42px rgba(255,255,255,.4), '
+              + '0 0 96px rgba(255,255,255,.22)';
   var SP_HALO = {
     dark:  '0 1px 0 rgba(255,255,255,.28), 0 1px 3px rgba(0,0,0,.9), 0 3px 14px rgba(0,0,0,.75), 0 0 34px rgba(0,0,0,.6)',
     light: '0 1px 0 rgba(255,255,255,.9), 0 0 6px rgba(255,253,250,1), 0 0 18px rgba(255,252,248,.95), 0 1px 4px rgba(0,0,0,.35)',
@@ -1707,13 +1739,16 @@ body{
   function spGoDark(){
     if (spDark) return;
     spDark = true;
-    splash.classList.add('is-dark');
-    splash.style.setProperty('--acc', '#FFFFFF');
-    splash.style.setProperty('--lf',  '"Cormorant Garamond",Georgia,serif');
-    splash.style.setProperty('--lsz', '54px');
-    splash.style.setProperty('--lw',  400);
-    splash.style.setProperty('--lt',  '.20em');
-    splash.style.setProperty('--halo','none');
+    splash.classList.add('is-dark');       // такт первый: ткани и цветное слово гаснут вместе
+    setTimeout(function(){                  // такт второй: на чёрном слово проступает заново
+      splash.style.setProperty('--acc', '#FFFFFF');
+      splash.style.setProperty('--lf',  '"Cormorant Garamond",Georgia,serif');
+      splash.style.setProperty('--lsz', '54px');
+      splash.style.setProperty('--lw',  400);
+      splash.style.setProperty('--lt',  '.20em');
+      splash.style.setProperty('--halo', SP_GLOW);
+      splash.classList.add('is-lit');
+    }, 980);
     setTimeout(function(){                  // погасло совсем — крутить больше нечего
       spOff = true;
       clearInterval(spTimer);
