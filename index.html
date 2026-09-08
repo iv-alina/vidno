@@ -1028,10 +1028,10 @@ body{
 .splash.is-dark .sp-veil,
 .splash.is-dark .sp-grain,
 .splash.is-dark .sp-line{opacity:0;}
-/* цветное слово уходит вместе с тканями... */
-.splash.is-dark .sp-mark{opacity:0;transition:opacity .78s ease;}
-/* ...и через мгновение рождается на чёрном заново: белым, чётким, сияющим */
-.splash.is-lit .sp-mark{opacity:1;transition:opacity 1.15s ease;}
+/* цветное слово растворяется до последнего — тем же движением, что и ткани */
+.splash.is-dark .sp-mark{opacity:0;transition:opacity 1.7s ease;}
+/* и только когда не осталось ничего, на чёрном рождается белое слово */
+.splash.is-lit .sp-mark{opacity:1;transition:opacity .95s ease;}
 .splash.is-dark .hint{color:rgba(255,255,255,.82);}
 
 @keyframes shine{
@@ -1748,11 +1748,11 @@ body{
       splash.style.setProperty('--lt',  '.20em');
       splash.style.setProperty('--halo', SP_GLOW);
       splash.classList.add('is-lit');
-    }, 980);
+    }, 1740);
     setTimeout(function(){                  // погасло совсем — крутить больше нечего
       spOff = true;
       clearInterval(spTimer);
-    }, 1900);
+    }, 1720);
   }
 
   (function spStart(){
