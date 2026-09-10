@@ -228,6 +228,35 @@ body{
 .fl-show{flex:1 1 auto;}
 .round.fl-heart{width:52px;height:52px;font-size:18px;line-height:1;}  /* .round идёт ниже — нужен вес */
 
+
+/* ─────────── связка · блок J ─────────── */
+
+.ch-head{display:flex;align-items:baseline;gap:12px;padding:0 20px;}
+.ch-head .title{padding:0;flex:1 1 auto;}
+.ch-count{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);
+  flex:0 0 auto;font-variant-numeric:tabular-nums;}
+
+.ch-art{display:block;width:100%;height:auto;margin:14px 0 0;}
+.ch-ring{fill:none;stroke:var(--accent);stroke-width:10;}
+.ch-season{font-family:var(--f-title);font-weight:400;font-size:34px;fill:var(--ink);}
+.ch-year{font-family:var(--f-mono);font-size:8px;letter-spacing:.28em;fill:var(--grey);}
+.ch-thread{fill:none;stroke:var(--edge);stroke-width:1;}
+.ch-on{fill:var(--accent);stroke:none;}
+.ch-off{fill:none;stroke:var(--grey);stroke-width:1.4;}
+.ch-on  .ch-line{fill:none;stroke:var(--accent);}
+.ch-off .ch-line{fill:none;stroke:var(--grey);stroke-width:1.4;}
+.ch-on  .ch-hole{fill:var(--bg2);stroke:none;}
+.ch-off .ch-hole{fill:none;stroke:var(--grey);stroke-width:1.2;}
+.ch-cap{font-family:var(--f-mono);font-size:8px;letter-spacing:.14em;fill:var(--grey);
+  text-transform:uppercase;}
+.ch-cap.is-on{fill:var(--ink2);}
+
+.ch-foot{margin-top:auto;padding:22px 20px calc(26px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--line);}
+.ch-foot p{margin:0;font-family:var(--f-body);font-size:15px;font-weight:300;color:var(--ink2);}
+.ch-foot em{font-family:var(--f-accent);font-style:italic;font-weight:400;font-size:19px;
+  color:var(--accent);font-variant-numeric:tabular-nums;}
+
 /* ─────────── нижняя панель ─────────── */
 
 .tabbar{
@@ -1377,19 +1406,66 @@ body{
       <div class="statusbar"></div>
       <div class="scr-head">
         <span class="mono">VIDNO</span>
-        <span class="mono grey">[ связка ]</span>
+        <span class="chip">[ связка ]</span>
       </div>
-      <h1 class="title">Здесь будет<em>связка</em></h1>
-      <p class="mono eyebrow" style="color:var(--accent)">блок J · связка</p>
 
-      <div class="stub">
-        <p class="mono grey">[ каркас ]</p>
-        <ul class="plan">
-          <li><span class="num">01</span><span>Кольцо сезона — осень 2026</span></li>
-          <li><span class="num">02</span><span>Пять подвесок на нитях <span class="count">( 0 / 7 )</span></span></li>
-          <li><span class="num">03</span><span>Строка «ты и ещё …»</span></li>
-        </ul>
-        <p class="mono grey stub-foot">экран собирается</p>
+      <div class="ch-head">
+        <h1 class="title">Твоя<em>связка</em></h1>
+        <span class="ch-count" id="ch-count">( 0 / 5 )</span>
+      </div>
+
+      <svg class="ch-art" viewBox="0 0 390 432" role="img"
+           aria-labelledby="ch-title" preserveAspectRatio="xMidYMid meet">
+        <title id="ch-title">Кольцо сезона осень 2026 и пять подвесок</title>
+
+        <circle class="ch-ring" cx="195" cy="128" r="86"/>
+        <text class="ch-season" x="195" y="130" text-anchor="middle" dominant-baseline="middle">осень</text>
+        <text class="ch-year"   x="195" y="158" text-anchor="middle">2026</text>
+
+        <path class="ch-thread" d="M138.6 192.9 Q121.4 303.9 43 357"/>
+        <path class="ch-thread" d="M165.6 208.8 Q157.2 310.0 119 357"/>
+        <path class="ch-thread" d="M195.0 214.0 Q195.0 312.0 195 357"/>
+        <path class="ch-thread" d="M224.4 208.8 Q232.8 310.0 271 357"/>
+        <path class="ch-thread" d="M251.4 192.9 Q268.6 303.9 347 357"/>
+
+        <!-- сердце -->
+        <g id="ch-g-heart" transform="translate(43 372)">
+          <path d="M0 9.5 C-9 2.5 -13 -1.5 -13 -6 C-13 -10 -9.8 -12.5 -6.4 -12.5
+                   C-3.7 -12.5 -1.3 -11 0 -8.8 C1.3 -11 3.7 -12.5 6.4 -12.5
+                   C9.8 -12.5 13 -10 13 -6 C13 -1.5 9 2.5 0 9.5 Z"/>
+        </g>
+        <!-- замок -->
+        <g id="ch-g-lock" transform="translate(119 372)">
+          <path class="ch-line" stroke-width="2.2" d="M-6.5 -3 V-8 A6.5 6.5 0 0 1 6.5 -8 V-3"/>
+          <rect x="-10" y="-3" width="20" height="15"/>
+        </g>
+        <!-- бирка -->
+        <g id="ch-g-tag" transform="translate(195 372)">
+          <path d="M-11 -11 H4 L11 -4 V11 H-11 Z"/>
+          <circle class="ch-hole" cx="-5.5" cy="-5.5" r="2.4"/>
+        </g>
+        <!-- звезда -->
+        <g id="ch-g-star" transform="translate(271 372)">
+          <polygon points="0.0,-13.0 3.2,-4.4 12.4,-4.0 5.1,1.7 7.6,10.5 0.0,5.4
+                           -7.6,10.5 -5.1,1.7 -12.4,-4.0 -3.2,-4.4"/>
+        </g>
+        <!-- ключ -->
+        <g id="ch-g-key" transform="translate(347 372)">
+          <circle class="ch-line" cx="0" cy="-6" r="6.5" stroke-width="2.4"/>
+          <path d="M-1.4 0 H1.4 V12 H-1.4 Z"/>
+          <path d="M1.4 5 H7 V7.2 H1.4 Z"/>
+          <path d="M1.4 9 H5 V11.2 H1.4 Z"/>
+        </g>
+
+        <text class="ch-cap" id="ch-c-heart" x="43"  y="404" text-anchor="middle">1 вещь</text>
+        <text class="ch-cap" id="ch-c-lock"  x="119" y="404" text-anchor="middle">1 образ</text>
+        <text class="ch-cap" id="ch-c-tag"   x="195" y="404" text-anchor="middle">5 вещей</text>
+        <text class="ch-cap" id="ch-c-star"  x="271" y="404" text-anchor="middle">15 вещей</text>
+        <text class="ch-cap" id="ch-c-key"   x="347" y="404" text-anchor="middle">вход</text>
+      </svg>
+
+      <div class="ch-foot">
+        <p>Ты и ещё <em id="ch-others">—</em> собрали связку этой осенью</p>
       </div>
     </section>
 
@@ -1961,6 +2037,41 @@ body{
     buildChip.textContent = n ? '[ собираем шкаф ]' : '[ первый день ]';
     paintMosaic();
     paintToday();
+    paintCharms();
+  }
+
+  // ═══════════ связка · блок J ═══════════
+  // Подвеска не украшение: у каждой своё условие, и оно считается по живому шкафу.
+  // Пока условие не выполнено — тонкий контур, выполнено — заливка.
+  var CHARMS = [
+    {id:'heart', cap:'1 вещь',  got:function(){ return items.length >= 1; }},
+    {id:'lock',  cap:'1 образ', got:function(){ return items.length >= WOW; }},
+    {id:'tag',   cap:'5 вещей',   got:function(){ return items.length >= 5; }},
+    {id:'star',  cap:'15 вещей',  got:function(){ return items.length >= LIMIT; }},
+    {id:'key',   cap:'вход',         got:function(){ return flags.onboarded === true; }}
+  ];
+
+  // ЗАГЛУШКА. Сколько людей собрало связку — знает только сервер, которого нет.
+  // До запуска строку либо считать по-настоящему, либо убрать: выдуманное число
+  // в социальном доказательстве — это враньё пользователю, а на старте, когда
+  // людей трое, оно ещё и выглядит нелепо.
+  var OTHERS_STUB = 1240;
+
+  var chCount  = document.getElementById('ch-count');
+  var chOthers = document.getElementById('ch-others');
+
+  function paintCharms(){
+    var n = 0;
+    CHARMS.forEach(function(c){
+      var on = c.got();
+      if (on) n++;
+      var g = document.getElementById('ch-g-' + c.id);
+      var t = document.getElementById('ch-c-' + c.id);
+      if (g) g.setAttribute('class', on ? 'ch-on' : 'ch-off');
+      if (t) t.setAttribute('class', 'ch-cap' + (on ? ' is-on' : ''));
+    });
+    chCount.textContent = '( ' + n + ' / ' + CHARMS.length + ' )';
+    chOthers.textContent = OTHERS_STUB.toLocaleString('ru-RU');
   }
 
   // ═══════════ гардероб мозаикой · блок H ═══════════
