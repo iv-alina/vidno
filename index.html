@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>VIDNO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F2E9DD">
+<meta name="theme-color" content="#141017">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -14,25 +14,37 @@
 <link rel="icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Playfair+Display:ital,wght@1,400;1,500&family=Onest:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400;500;600&family=Fira+Mono:wght@400;700&family=Manrope:wght@200;300;500&family=Yeseva+One&display=swap">
+<!-- Три семьи держат приложение: Cormorant Garamond, Manrope, Fira Mono.
+     Остальные пять живут только на заставке и рисуют там одно слово VIDNO —
+     латиницу. Google отдаёт кириллицу отдельным unicode-range, поэтому их
+     кириллические файлы браузер не скачивает вовсе. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@200;300;500;700&family=Fira+Mono:wght@400;700&family=Prata&family=Playfair+Display:ital,wght@1,500&family=Onest:wght@300&family=JetBrains+Mono:wght@500&family=Yeseva+One&display=swap">
 
 </head>
 <body>
 <style>
 :root{
-  --bg:#FBF7F1;
-  --bg2:#F2E9DD;
-  --ink:#1C140F;
-  --accent:#BE3A24;
-  --grey:#8A7867;
-  --line:#E2D6C6;
-  --paper:#F7EFE4;
-  --studio:#FBF7F1;      /* поле экрана сборки — тот же почти белый, что в гардеробе */
+  /* Сливовый код. Глубина делается светлотой, а не тенями: тени на сливе
+     не читаются, поэтому их в коде нет вовсе. Четыре слоя, каждый следующий
+     примерно вдвое светлее предыдущего. Контрасты проверены по WCAG AA. */
+  --bg:#141017;          /* фон приложения */
+  --bg2:#1E1823;         /* плашка: карточка, погода, ячейка гардероба */
+  --paper:#2A2231;       /* приподнятое: поле ввода, выбранная вещь */
+  --line:#3B3143;        /* разделитель */
+  --edge:#7A6B85;        /* граница поля — 3,8:1, минимум по WCAG 1.4.11 */
+  --ink:#F2EAEE;         /* текст, 15,9:1 */
+  --ink2:#C0AEBE;        /* вторичный текст, 9,0:1 */
+  --grey:#93809A;        /* служебное, моно, 5,2:1 */
+  --accent:#D98FA4;      /* розовый, 7,5:1 */
+  --acc-ink:#1A121C;     /* текст на розовой заливке, 7,3:1 */
+  --studio:#141017;      /* поле экрана сборки */
+  --scrim:20,16,23;      /* фон в rgba-виде — для затемнений поверх фотографий */
+  --lift:242,234,238;    /* текст в rgba-виде — для светлых волосков на тёмном */
 
-  --f-title:"Prata",Georgia,"Times New Roman",serif;
-  --f-accent:"Playfair Display",Georgia,"Times New Roman",serif;
-  --f-body:"Onest","Helvetica Neue",Arial,sans-serif;
-  --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --f-title:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --f-accent:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --f-body:"Manrope","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"Fira Mono","SFMono-Regular",Consolas,monospace;
   --f-logo:"Cormorant Garamond",Georgia,serif;
   --f-sp-mono:"Fira Mono","SFMono-Regular",Consolas,monospace;
 }
@@ -175,15 +187,17 @@ body{
 
 .stub-foot{margin-top:auto;padding-top:8px;}
 
-/* ─────────── тёмный экран (связка) ─────────── */
+/* ─────────── экран «связка» ─────────── */
+/* Раньше он был единственным тёмным пятном в светлом приложении. Теперь тёмное
+   всё, и отличаться ему нужно иначе — не цветом, а высотой слоя. */
 
-.screen.dark{background:var(--ink);color:var(--paper);}
-.screen.dark .stub{background:var(--ink);border-top-color:rgba(247,239,228,.16);}
-.screen.dark .plan li{border-top-color:rgba(247,239,228,.16);}
-.screen.dark .plan li:last-child{border-bottom-color:rgba(247,239,228,.16);}
-.screen.dark .mono.grey{color:#A89683;}
-.screen.dark .plan .num{color:#F0836A;}
-.screen.dark .count{color:#F0836A;}
+.screen.dark{background:var(--bg2);color:var(--ink);}
+.screen.dark .stub{background:var(--bg2);border-top-color:var(--line);}
+.screen.dark .plan li{border-top-color:var(--line);}
+.screen.dark .plan li:last-child{border-bottom-color:var(--line);}
+.screen.dark .mono.grey{color:var(--grey);}
+.screen.dark .plan .num{color:var(--accent);}
+.screen.dark .count{color:var(--accent);}
 
 /* ─────────── нижняя панель ─────────── */
 
@@ -195,7 +209,7 @@ body{
   border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-.tabbar.on-dark{background:var(--ink);border-top-color:rgba(247,239,228,.16);}
+.tabbar.on-dark{background:var(--bg2);border-top-color:var(--line);}
 
 .tab{
   flex:1 1 0;
@@ -235,9 +249,9 @@ body{
   color:var(--grey);
 }
 .tab[aria-selected="true"] .tab-label{color:var(--ink);}
-.tabbar.on-dark .tab[aria-selected="true"] .tab-label{color:var(--paper);}
-.tabbar.on-dark .tab-label{color:#A89683;}
-.tabbar.on-dark .dot{border-color:#A89683;}
+.tabbar.on-dark .tab[aria-selected="true"] .tab-label{color:var(--accent);}
+.tabbar.on-dark .tab-label{color:var(--grey);}
+.tabbar.on-dark .dot{border-color:var(--grey);}
 .tabbar.on-dark .tab[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);}
 
 /* ─────────── первый день · блок C ─────────── */
@@ -261,10 +275,10 @@ body{
   cursor:pointer;
   text-align:center;
   -webkit-tap-highlight-color:transparent;
-  box-shadow:0 0 26px rgba(190,58,36,.22), inset 0 0 26px rgba(190,58,36,.06);
+  box-shadow:0 0 26px rgba(217,143,164,.20), inset 0 0 30px rgba(217,143,164,.07);
 }
 .drop:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
-.drop.over{background:rgba(190,58,36,.05);}
+.drop.over{background:rgba(217,143,164,.08);}
 
 .drop-lead{
   font-family:var(--f-body);
@@ -328,13 +342,13 @@ body{
   align-items:baseline;
   gap:16px;
   padding:15px 0;
-  border-top:1px solid rgba(28,20,15,.14);
+  border-top:1px solid var(--line);
   font-family:var(--f-body);
   font-size:13.5px;
   font-weight:300;
   line-height:1.4;
 }
-.steps li:last-child{border-bottom:1px solid rgba(28,20,15,.14);}
+.steps li:last-child{border-bottom:1px solid var(--line);}
 .steps .num{
   font-family:var(--f-mono);
   font-size:8px;
@@ -444,7 +458,7 @@ body{
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
-.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--acc-ink);}
 .pill:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
 
 .sheet-foot{margin-top:auto;padding:30px 20px 34px;}
@@ -483,8 +497,8 @@ body{
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
-.btn--fill{background:var(--ink);border-color:var(--ink);color:var(--paper);}
-.btn--accent{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+.btn--fill{background:var(--ink2);border-color:var(--ink2);color:var(--bg);}
+.btn--accent{background:var(--accent);border-color:var(--accent);color:var(--acc-ink);}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
 .or{display:flex;align-items:center;gap:14px;padding:26px 20px 0;}
@@ -554,7 +568,7 @@ body{
 }
 
 .round--lg{width:52px;height:52px;font-size:18px;}
-.round[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+.round[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--acc-ink);}
 
 .look-actions{display:flex;align-items:center;gap:9px;}
 .look-actions .btn{flex:1 1 auto;}
@@ -569,13 +583,13 @@ body{
 .studio{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
 .studio-vig{
   position:absolute;inset:0;
-  background:radial-gradient(122% 80% at 50% 32%, rgba(255,253,249,.92) 0%, rgba(255,253,249,0) 48%, rgba(28,20,15,.11) 100%);
+  background:radial-gradient(122% 80% at 50% 32%, rgba(var(--lift),.07) 0%, rgba(var(--lift),0) 52%, rgba(0,0,0,.34) 100%);
 }
 .studio-grain{position:absolute;inset:-20%;opacity:.05;}
 .studio-line{position:absolute;inset:0;width:100%;height:100%;}
 .studio-line path{
   fill:none;
-  stroke:rgba(28,20,15,.24);
+  stroke:rgba(var(--lift),.20);
   stroke-width:1;
   stroke-dasharray:3 7;
   vector-effect:non-scaling-stroke;
@@ -591,7 +605,7 @@ body{
 #s-build .title{color:var(--ink);}
 #s-build .title em{
   color:var(--accent);
-  text-shadow:0 0 20px rgba(190,58,36,.42), 0 0 52px rgba(190,58,36,.20);
+  text-shadow:0 0 20px rgba(217,143,164,.42), 0 0 52px rgba(217,143,164,.20);
 }
 #s-build .scr-head .mono{color:var(--ink);}
 #s-build .scr-head .mono.grey{color:var(--grey);}
@@ -636,7 +650,7 @@ body{
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
-.cat.is-on{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.cat.is-on{background:var(--ink2);border-color:var(--ink2);color:var(--bg);}
 .cat:focus-visible{outline:1px solid var(--accent);outline-offset:2px;}
 
 /* строка «фильтры · N из M» */
@@ -682,10 +696,10 @@ body{
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(180deg, rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px),
-    linear-gradient(0deg,   rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px),
-    linear-gradient(90deg,  rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px),
-    linear-gradient(270deg, rgba(251,247,241,.16) 0, rgba(251,247,241,0) 10px);
+    linear-gradient(180deg, rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px),
+    linear-gradient(0deg,   rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px),
+    linear-gradient(90deg,  rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px),
+    linear-gradient(270deg, rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px);
 }
 .m-cap{
   position:absolute;
@@ -716,12 +730,12 @@ body{
 }
 .m-del i{
   width:26px;height:26px;border-radius:50%;
-  background:rgba(251,247,241,.80);
-  color:rgba(28,20,15,.55);
+  background:rgba(var(--scrim),.86);
+  color:rgba(var(--lift),.70);
   font-family:var(--f-body);font-size:15px;font-style:normal;line-height:1;
   display:flex;align-items:center;justify-content:center;
 }
-.m-del:active i{background:var(--accent);color:var(--paper);}
+.m-del:active i{background:var(--accent);color:var(--acc-ink);}
 .m-del:focus-visible{outline:1px solid var(--accent);outline-offset:-4px;}
 
 /* полоса отмены удаления */
@@ -732,15 +746,16 @@ body{
   z-index:5;
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:15px 18px;
-  background:var(--ink);
-  color:var(--paper);
+  background:var(--paper);
+  color:var(--ink);
+  border:1px solid var(--line);
 }
 .update{z-index:7;}
 
 /* служебная строка: сброс и номер версии · убрать перед показом людям */
 .testline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;}
 .testline .reset{margin:0;}
-.undo .mono{color:var(--paper);}
+.undo .mono{color:var(--grey);}
 .undo-btn{
   background:none;border:0;
   padding:10px 2px;margin:-10px 0;
@@ -767,7 +782,7 @@ body{
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
-.fab .plus::before,.fab .plus::after{background:var(--paper);}
+.fab .plus::before,.fab .plus::after{background:var(--acc-ink);}
 .fab:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
 
 /* кнопка «в гардероб» под лентой добавленных вещей */
@@ -797,14 +812,14 @@ body{
 }
 
 /* фотография сезона во всю ширину */
-.hero{position:relative;height:250px;overflow:hidden;background:var(--ink);}
-.hero-pic{position:absolute;inset:0;background:var(--ink) url("hero.jpg") center/cover no-repeat;}
+.hero{position:relative;height:250px;overflow:hidden;background:var(--bg2);}
+.hero-pic{position:absolute;inset:0;background:var(--bg2) url("hero.jpg") center/cover no-repeat;}
 .hero-grain{position:absolute;inset:-20%;opacity:.06;}
 .hero-veil{
   position:absolute;inset:0;
-  background:linear-gradient(180deg, rgba(28,20,15,.46) 0%, rgba(28,20,15,.14) 34%, rgba(28,20,15,.66) 100%);
+  background:linear-gradient(180deg, rgba(var(--scrim),.50) 0%, rgba(var(--scrim),.18) 30%, rgba(var(--scrim),.60) 64%, rgba(var(--scrim),.90) 100%);
 }
-.hero-tag{position:absolute;top:16px;z-index:2;color:var(--paper);}
+.hero-tag{position:absolute;top:16px;z-index:2;color:var(--ink);}
 .hero-tag--l{left:20px;}
 .hero-tag--r{right:20px;}
 .hero-title{
@@ -817,7 +832,10 @@ body{
   font-weight:400;
   font-size:30px;
   line-height:1.04;
-  color:var(--paper);
+  color:var(--ink);
+  /* Ореол в цвет фона: под фразой может оказаться белый мех, и без подложки
+     светлая антиква на нём тонет. Правило то же, что на заставке. */
+  text-shadow:0 1px 2px rgba(var(--scrim),.9), 0 2px 18px rgba(var(--scrim),.75);
 }
 .hero-title em{
   display:block;
@@ -921,10 +939,10 @@ body{
 .idea-card img{width:100%;height:100%;object-fit:cover;display:block;}
 .idea-card::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg, rgba(28,20,15,0) 52%, rgba(28,20,15,.56) 100%);
+  background:linear-gradient(180deg, rgba(var(--scrim),0) 52%, rgba(var(--scrim),.72) 100%);
 }
 .idea-card:focus-visible{outline:1px solid var(--accent);outline-offset:-3px;}
-.idea-num{position:absolute;left:12px;bottom:11px;z-index:1;color:rgba(247,239,228,.86);}
+.idea-num{position:absolute;left:12px;bottom:11px;z-index:1;color:rgba(var(--lift),.86);}
 
 /* ─────────── экран «Идеи» · лента ─────────── */
 
@@ -935,17 +953,18 @@ body{
 .idea-pic img{width:100%;height:100%;object-fit:cover;display:block;}
 .idea-pic::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg, rgba(28,20,15,0) 44%, rgba(28,20,15,.74) 100%);
+  background:linear-gradient(180deg, rgba(var(--scrim),0) 44%, rgba(var(--scrim),.86) 100%);
 }
 .idea-cap{position:absolute;left:20px;right:20px;bottom:18px;z-index:1;}
-.idea-cap .mono{color:#F0836A;}
+.idea-cap .mono{color:var(--accent);}
 .idea-name{
   margin:9px 0 0;
   font-family:var(--f-title);
   font-weight:400;
   font-size:26px;
   line-height:1.06;
-  color:var(--paper);
+  color:var(--ink);
+  text-shadow:0 1px 2px rgba(var(--scrim),.9), 0 2px 16px rgba(var(--scrim),.7);
 }
 .idea-name em{
   display:block;
@@ -1044,11 +1063,33 @@ body{
   .splash.is-lit .logo{animation:shine 4.4s ease-in-out infinite;}
 }
 
+/* Выворот. Свет идёт из самого слова: белое пятно распахивается от букв на
+   весь экран, буквы за эти полсекунды становятся чернильными, ореол гаснет —
+   заставка заканчивается тем же тёплым белым, на котором открывается приложение.
+   Резкой вспышки нет намеренно: полноэкранный скачок с чёрного на белый на
+   телефоне в тёмной комнате бьёт по глазам. */
+.sp-flip{
+  position:absolute;inset:-50%;z-index:2;pointer-events:none;
+  background:radial-gradient(circle at 50% 48%,
+             var(--bg) 0 40%, rgba(20,16,23,.86) 52%, rgba(20,16,23,0) 66%);
+  opacity:0;transform:scale(.06);will-change:transform;
+  transition:transform .54s cubic-bezier(.36,0,.22,1), opacity .22s ease;
+}
+.splash.is-day .sp-flip{opacity:1;transform:scale(4.6);}
+.splash.is-day .sp-mark{color:var(--ink);transition:opacity .95s ease, color .42s ease .1s;}
+.splash.is-day .hint{color:rgba(242,234,238,.58);transition:color .42s ease .1s;}
+.splash.is-day .hint-arrow{color:rgba(242,234,238,.42);}
+.splash.is-day .statusstrip span{color:rgba(242,234,238,.55);}
+
 /* чёрная штора: палец растворяет фон, страница при этом стоит на месте */
 .sp-curtain{
   position:absolute;inset:0;z-index:2;pointer-events:none;
   background:#000;opacity:0;
 }
+
+/* на свету слово не сияет — свет уже везде */
+.splash.is-day .logo{animation:none;text-shadow:none;}
+.splash.is-day .statusstrip span{transition:color .42s ease .1s;}
 
 /* при входе текст надвигается на человека и пропадает */
 .hint-wrap{transition:transform .62s cubic-bezier(.36,0,.2,1), opacity .5s ease-in;}
@@ -1080,6 +1121,7 @@ body{
 .logo{
   margin:0;
   font-family:var(--lf, var(--f-logo));
+  font-style:var(--lst,normal);
   font-weight:var(--lw,300);
   font-size:var(--lsz,54px);
   letter-spacing:var(--lt,.20em);
@@ -1131,6 +1173,7 @@ body{
     <div class="sp-slides" id="sp-slides"></div>
     <div class="sp-veil"></div>
     <div class="sp-curtain" id="sp-curtain"></div>
+    <div class="sp-flip" id="sp-flip"></div>
     <svg class="sp-grain" aria-hidden="true"><filter id="sp-gr"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#sp-gr)"/></svg>
 
     <div class="statusstrip">
@@ -1308,7 +1351,7 @@ body{
         <span class="mono grey">[ связка ]</span>
       </div>
       <h1 class="title">Здесь будет<em>связка</em></h1>
-      <p class="mono eyebrow" style="color:#F0836A">блок J · связка</p>
+      <p class="mono eyebrow" style="color:var(--accent)">блок J · связка</p>
 
       <div class="stub">
         <p class="mono grey">[ каркас ]</p>
@@ -1627,25 +1670,32 @@ body{
   // Бликов нет: контраст несёт сама фотография.
   // Начертание названия меняется вместе с материалом — по семьям, не наугад.
 
-  var SP_FONT = {
-    serif: {f:'"Cormorant Garamond",Georgia,serif', s:'54px', w:500, t:'.20em'},  // гладкое, дорогое
-    heavy: {f:'"Yeseva One",Georgia,serif',         s:'40px', w:400, t:'.14em'},  // пёстрое, нужен вес
-    mono:  {f:'"Fira Mono",monospace',              s:'30px', w:700, t:'.28em'},  // техническое
-    geo:   {f:'"Manrope",Arial,sans-serif',         s:'38px', w:500, t:'.30em'}   // матовое, мягкое
-  };
+  // Шрифт привязан не к ткани, а к номеру кадра, и список выстроен так, что
+  // сосед всегда из другого класса: антиква — моно — тяжёлый дисплей — гротеск —
+  // дидон — моно — курсив — лёгкий гротеск. Двух похожих подряд не бывает.
+  var SP_FONT = [
+    {f:'"Cormorant Garamond",Georgia,serif',  s:'54px', w:500, t:'.20em', st:'normal'},
+    {f:'"Fira Mono",monospace',               s:'30px', w:700, t:'.30em', st:'normal'},
+    {f:'"Yeseva One",Georgia,serif',          s:'40px', w:400, t:'.14em', st:'normal'},
+    {f:'"Manrope",Arial,sans-serif',          s:'38px', w:500, t:'.30em', st:'normal'},
+    {f:'"Prata",Georgia,serif',               s:'40px', w:400, t:'.12em', st:'normal'},
+    {f:'"JetBrains Mono",monospace',          s:'27px', w:500, t:'.36em', st:'normal'},
+    {f:'"Playfair Display",Georgia,serif',    s:'46px', w:500, t:'.06em', st:'italic'},
+    {f:'"Onest",Arial,sans-serif',            s:'40px', w:300, t:'.34em', st:'normal'}
+  ];
 
   var SP_TEX = [
-    {id:'black-fur',     acc:'#E7A6B8', halo:'dark',  f:'geo',   lum:.137},
-    {id:'wine-leather',  acc:'#E3C77A', halo:'dark',  f:'serif', lum:.170},
-    {id:'croc',          acc:'#9FD8C0', halo:'dark',  f:'serif', lum:.171},
-    {id:'lace-leather',  acc:'#E0374B', halo:'dark',  f:'mono',  lum:.195},
-    {id:'chiffon',       acc:'#E7A6B8', halo:'dark',  f:'serif', lum:.211},
-    {id:'brown-leather', acc:'#9FD3E3', halo:'dark',  f:'geo',   lum:.263},
-    {id:'olive-knit',    acc:'#F2A9C4', halo:'dark',  f:'geo',   lum:.307},
-    {id:'denim',         acc:'#F2B79A', halo:'dark',  f:'mono',  lum:.313},
-    {id:'leopard',       acc:'#B9A6E8', halo:'dark',  f:'heavy', lum:.321},
-    {id:'zebra',         acc:'#C4587A', halo:'both',  f:'heavy', lum:.433},
-    {id:'python',        acc:'#7A2E44', halo:'light', f:'heavy', lum:.549}
+    {id:'black-fur',     acc:'#E7A6B8', halo:'dark',  lum:.137},
+    {id:'wine-leather',  acc:'#E3C77A', halo:'dark',  lum:.170},
+    {id:'croc',          acc:'#9FD8C0', halo:'dark',  lum:.171},
+    {id:'lace-leather',  acc:'#E0374B', halo:'dark',  lum:.195},
+    {id:'chiffon',       acc:'#E7A6B8', halo:'dark',  lum:.211},
+    {id:'brown-leather', acc:'#9FD3E3', halo:'dark',  lum:.263},
+    {id:'olive-knit',    acc:'#F2A9C4', halo:'dark',  lum:.307},
+    {id:'denim',         acc:'#F2B79A', halo:'dark',  lum:.313},
+    {id:'leopard',       acc:'#B9A6E8', halo:'dark',  lum:.321},
+    {id:'zebra',         acc:'#C4587A', halo:'both',  lum:.433},
+    {id:'python',        acc:'#7A2E44', halo:'light', lum:.549}
   ];
 
   // ореол: на светлой пестроте светлый, на тёмной тёмный, на зебре оба сразу
@@ -1677,18 +1727,25 @@ body{
 
   var spI = 0, spTimer = null, spDark = false, spOff = false;
 
+  var FLIP_TO_DAY = false;      // финал заставки: false — чёрный, true — выворот в белое
+
+  function darkWanted(){
+    return !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
   function spShow(n){
     spSlides[spI].classList.remove('on');
     spI = (n + spCards.length) % spCards.length;
     spSlides[spI].classList.add('on');
     if (spOff) return;                      // уже чернота — слово стало белым, не трогаем
-    var t = spCards[spI], f = SP_FONT[t.f];
+    var t = spCards[spI], f = SP_FONT[spI % SP_FONT.length];
     splash.style.setProperty('--acc',  t.acc);
     splash.style.setProperty('--halo', SP_HALO[t.halo]);
     splash.style.setProperty('--lf',   f.f);
     splash.style.setProperty('--lsz',  f.s);
     splash.style.setProperty('--lw',   f.w);
     splash.style.setProperty('--lt',   f.t);
+    splash.style.setProperty('--lst',  f.st);
   }
 
   // ── глубина: текстура едет против наклона ──
@@ -1746,8 +1803,15 @@ body{
       splash.style.setProperty('--lsz', '54px');
       splash.style.setProperty('--lw',  400);
       splash.style.setProperty('--lt',  '.20em');
+      splash.style.setProperty('--lst', 'normal');
       splash.style.setProperty('--halo', SP_GLOW);
       splash.classList.add('is-lit');
+      // Выворот в светлую тему написан и проверен, но выключен: решено, что
+      // финал заставки остаётся чёрным с белым сияющим словом. Когда появится
+      // светлая тема приложения — поставить FLIP_TO_DAY в true.
+      if (FLIP_TO_DAY && !darkWanted()) setTimeout(function(){
+        if (!entered) splash.classList.add('is-day');
+      }, 760);
     }, 1740);
     setTimeout(function(){                  // погасло совсем — крутить больше нечего
       spOff = true;
