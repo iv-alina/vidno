@@ -199,6 +199,35 @@ body{
 .screen.dark .plan .num{color:var(--accent);}
 .screen.dark .count{color:var(--accent);}
 
+/* ─────────── фильтры · блок I ─────────── */
+
+.linkbtn{
+  background:none;border:0;padding:8px 0;margin:-8px 0;
+  font-family:var(--f-body);font-size:14px;font-weight:400;
+  color:var(--accent);cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.linkbtn:disabled{color:var(--grey);cursor:default;}
+.linkbtn:focus-visible{outline:1px solid var(--accent);outline-offset:3px;}
+
+.fl-lead{padding:12px 20px 0;}
+.fl-group{padding:32px 20px 0;}
+.fl-head{
+  display:flex;align-items:baseline;gap:12px;
+  border-bottom:1px solid var(--line);padding-bottom:9px;
+}
+/* 24 px, а не 20: Cormorant тоньше Prata и на мелком кегле проваливается */
+.fl-head h2{margin:0;font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1;}
+.fl-head .n{margin-left:auto;}
+
+.fl-foot{
+  position:sticky;bottom:0;z-index:2;margin-top:36px;
+  display:flex;align-items:center;gap:10px;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg, rgba(var(--scrim),0) 0%, rgba(var(--scrim),.94) 30%, var(--bg) 64%);
+}
+.fl-show{flex:1 1 auto;}
+.round.fl-heart{width:52px;height:52px;font-size:18px;line-height:1;}  /* .round идёт ниже — нужен вес */
+
 /* ─────────── нижняя панель ─────────── */
 
 .tabbar{
@@ -497,6 +526,7 @@ body{
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
+.btn:disabled{background:none;border-color:var(--line);color:var(--grey);cursor:default;}
 .btn--fill{background:var(--ink2);border-color:var(--ink2);color:var(--bg);}
 .btn--accent{background:var(--accent);border-color:var(--accent);color:var(--acc-ink);}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
@@ -1268,7 +1298,6 @@ body{
         <button class="pill--line" type="button" id="wr-filters">Фильтры <b>( 0 )</b></button>
         <span class="mono grey" id="wr-shown">0 из 0</span>
       </div>
-      <p class="mono grey wr-note" id="wr-note" hidden>[ фильтры · блок I · собираем следующим ]</p>
 
       <div class="mosaic" id="mosaic"></div>
 
@@ -1402,10 +1431,58 @@ body{
       <input id="item-name" type="text" autocomplete="off" spellcheck="false" placeholder="Например: серый свитер">
     </div>
 
+    <!-- качества: необязательные, но без них фильтры мертвы -->
+    <div class="fl-group">
+      <div class="fl-head"><h2>Настроение</h2><span class="mono grey n">можно пропустить</span></div>
+      <div class="pills" id="it-mood" role="group" aria-label="Настроение"></div>
+    </div>
+    <div class="fl-group">
+      <div class="fl-head"><h2>Стиль</h2><span class="mono grey n">можно пропустить</span></div>
+      <div class="pills" id="it-style" role="group" aria-label="Стиль"></div>
+    </div>
+    <div class="fl-group">
+      <div class="fl-head"><h2>Погода</h2><span class="mono grey n">можно пропустить</span></div>
+      <div class="pills" id="it-weather" role="group" aria-label="Погода"></div>
+    </div>
+
     <div class="sheet-foot">
       <p class="counter"><b id="item-count">0 из 15</b><i id="item-left"></i></p>
       <div class="progress"><span id="item-bar"></span></div>
       <button class="btn btn--accent" type="button" id="item-save" disabled>Сохранить вещь</button>
+    </div>
+  </div>
+
+  <!-- ЛИСТ · ФИЛЬТРЫ · блок I -->
+  <div class="sheet" id="sh-filters" hidden role="dialog" aria-label="Фильтры">
+    <div class="statusbar"></div>
+    <div class="sheet-head">
+      <button class="round" type="button" data-close="sh-filters" aria-label="Закрыть">×</button>
+      <span class="chip">[ фильтры ]</span>
+      <button class="linkbtn" type="button" id="fl-reset">Сбросить</button>
+    </div>
+
+    <h1 class="title">Собери<em>свой</em></h1>
+    <p class="mono grey fl-lead">Можно сочетать несколько</p>
+
+    <section class="fl-group">
+      <div class="fl-head"><h2>Настроение</h2><span class="mono grey n" id="fl-n-mood">( 0 )</span></div>
+      <div class="pills" id="fl-mood" role="group" aria-label="Настроение"></div>
+    </section>
+
+    <section class="fl-group">
+      <div class="fl-head"><h2>Стиль</h2><span class="mono grey n" id="fl-n-style">( 0 )</span></div>
+      <div class="pills" id="fl-style" role="group" aria-label="Стиль"></div>
+    </section>
+
+    <section class="fl-group">
+      <div class="fl-head"><h2>Погода</h2><span class="mono grey n" id="fl-n-weather">( 0 )</span></div>
+      <div class="pills" id="fl-weather" role="group" aria-label="Погода"></div>
+    </section>
+
+    <div class="fl-foot">
+      <button class="btn btn--accent fl-show" type="button" id="fl-show">Показать вещи</button>
+      <button class="round fl-heart" type="button" id="fl-heart"
+              aria-pressed="false" aria-label="Запомнить набор">&#9825;</button>
     </div>
   </div>
 
@@ -1893,9 +1970,59 @@ body{
   var wrShown  = document.getElementById('wr-shown');
   var mosaic   = document.getElementById('mosaic');
   var wrEmpty  = document.getElementById('wr-empty');
-  var wrNote   = document.getElementById('wr-note');
   var HEIGHTS  = [232, 176, 198, 250, 184, 214];   // ритм блоков разной высоты
   var filter   = 'Всё';
+
+  // ═══════════ качества · блок I ═══════════
+  // Три набора живут в одном месте: их рисует и карточка вещи, и экран фильтров.
+  var QUAL = {
+    mood:    {title:'Настроение', list:['Спокойное','Дерзкое','Нежное','Строгое','Игривое']},
+    style:   {title:'Стиль',      list:['Классика','Casual','Спорт','Вечерний','Минимализм','Винтаж']},
+    weather: {title:'Погода',     list:['Тепло','Прохладно','Холод','Дождь','Ветер']}
+  };
+  var QKEYS = ['mood','style','weather'];
+  var sel = {mood:[], style:[], weather:[]};        // выбранное на экране фильтров
+  // Запомненный сердцем набор возвращается сам — иначе «запомнить» ничего не значит.
+  // Видно его по счётчику на кнопке «Фильтры ( N )» и по строке «N из M».
+  if (flags.flSaved) QKEYS.forEach(function(g){ sel[g] = (flags.flSaved[g] || []).slice(); });
+
+  // Внутри группы — «или», между группами — «и». Пустая группа ничего не сужает.
+  function fits(it){
+    return QKEYS.every(function(g){
+      if (!sel[g].length) return true;
+      var has = it[g] || [];
+      return sel[g].some(function(v){ return has.indexOf(v) > -1; });
+    });
+  }
+  function selCount(){
+    return QKEYS.reduce(function(n, g){ return n + sel[g].length; }, 0);
+  }
+  // «1 вещь · 2 вещи · 5 вещей» — иначе счётчик читается как машинный
+  function veshchi(n){
+    var d = n % 10, dd = n % 100;
+    if (d === 1 && dd !== 11) return n + ' вещь';
+    if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return n + ' вещи';
+    return n + ' вещей';
+  }
+
+  // пилюля с множественным выбором — общая и для карточки, и для фильтров
+  function fillPills(box, list, chosen, onToggle){
+    box.innerHTML = '';
+    list.forEach(function(v){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pill';
+      b.textContent = v;
+      b.setAttribute('aria-pressed', chosen.indexOf(v) > -1 ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        var i = chosen.indexOf(v);
+        if (i > -1) chosen.splice(i, 1); else chosen.push(v);
+        b.setAttribute('aria-pressed', i > -1 ? 'false' : 'true');
+        onToggle();
+      });
+      box.appendChild(b);
+    });
+  }
 
   function paintCats(){
     var used = [];
@@ -1916,7 +2043,9 @@ body{
 
   function paintMosaic(){
     paintCats();
-    var shown = items.filter(function(it){ return filter === 'Всё' || it.cat === filter; });
+    var shown = items.filter(function(it){
+      return (filter === 'Всё' || it.cat === filter) && fits(it);
+    });
     wrCount.textContent = '( ' + items.length + ' )';
     wrShown.textContent = shown.length + ' из ' + items.length;
     wrEmpty.hidden = items.length > 0;
@@ -1982,9 +2111,62 @@ body{
   fab.addEventListener('click', function(){ show('s-build'); });
   document.getElementById('to-wardrobe').addEventListener('click', function(){ show('s-wardrobe'); });
   document.getElementById('wr-build').addEventListener('click', function(){ show('s-build'); });
-  document.getElementById('wr-filters').addEventListener('click', function(){
-    wrNote.hidden = !wrNote.hidden;
+  // ═══════════ экран фильтров ═══════════
+
+  var shFilters = document.getElementById('sh-filters');
+  var flShow    = document.getElementById('fl-show');
+  var flHeart   = document.getElementById('fl-heart');
+  var flReset   = document.getElementById('fl-reset');
+  var wrFilters = document.getElementById('wr-filters');
+
+  function sameSet(a, b){
+    if (!a || !b) return false;
+    return QKEYS.every(function(g){
+      var x = (a[g] || []).slice().sort(), y = (b[g] || []).slice().sort();
+      return x.length === y.length && x.every(function(v, i){ return v === y[i]; });
+    });
+  }
+
+  function paintFilters(){
+    QKEYS.forEach(function(g){
+      document.getElementById('fl-n-' + g).textContent = '( ' + sel[g].length + ' )';
+    });
+    var n = items.filter(function(it){ return fits(it); }).length;
+    var any = selCount() > 0;
+    flShow.disabled = any && n === 0;
+    flShow.textContent = (any && n === 0) ? 'Ничего не подходит' : 'Показать ' + veshchi(n);
+    flReset.disabled = !any;
+    flHeart.setAttribute('aria-pressed', any && sameSet(sel, flags.flSaved) ? 'true' : 'false');
+    flHeart.innerHTML = flHeart.getAttribute('aria-pressed') === 'true' ? '&#9829;' : '&#9825;';
+    wrFilters.querySelector('b').textContent = '( ' + selCount() + ' )';
+  }
+
+  QKEYS.forEach(function(g){
+    fillPills(document.getElementById('fl-' + g), QUAL[g].list, sel[g], function(){
+      paintFilters(); paintMosaic();
+    });
   });
+
+  wrFilters.addEventListener('click', function(){ paintFilters(); openSheet(shFilters); });
+  flShow.addEventListener('click', function(){ closeSheet(shFilters); });
+  flReset.addEventListener('click', function(){
+    QKEYS.forEach(function(g){ sel[g].length = 0; });
+    QKEYS.forEach(function(g){
+      fillPills(document.getElementById('fl-' + g), QUAL[g].list, sel[g], function(){
+        paintFilters(); paintMosaic();
+      });
+    });
+    paintFilters(); paintMosaic();
+  });
+  // сердце запоминает набор: чтобы завтра не собирать его заново
+  flHeart.addEventListener('click', function(){
+    if (flHeart.getAttribute('aria-pressed') === 'true') delete flags.flSaved;
+    else if (selCount()) flags.flSaved = {mood:sel.mood.slice(), style:sel.style.slice(), weather:sel.weather.slice()};
+    remember();
+    paintFilters();
+  });
+
+  paintFilters();          // счётчик на кнопке гардероба верен с первого кадра
 
   // ─── выбор файлов ───
   var picker = document.getElementById('picker');
@@ -2043,10 +2225,14 @@ body{
   }
 
   function openItem(src){
-    draft = {src: src, cat: '', name: ''};
+    draft = {src: src, cat: '', name: '', mood: [], style: [], weather: []};
     shotImg.src = src;
     nameIn.value = '';
     catsWrap.querySelectorAll('.pill').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+    // качества вещи: те же три набора, что на экране фильтров
+    QKEYS.forEach(function(g){
+      fillPills(document.getElementById('it-' + g), QUAL[g].list, draft[g], function(){});
+    });
     saveBtn.disabled = true;                       // пока не выбрана категория
     itemCnt.textContent = items.length + ' из ' + LIMIT;
     itemLeft.textContent = items.length < WOW
