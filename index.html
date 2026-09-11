@@ -434,6 +434,7 @@ body{
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
+.sheet > *{flex:0 0 auto;}   /* иначе flex сплющивает блок с заданной высотой — снимок */
 .sheet[hidden]{display:none !important;}
 @media (prefers-reduced-motion:no-preference){
   .sheet:not([hidden]){animation:sheet-up .34s cubic-bezier(.22,.61,.36,1) both;}
@@ -484,6 +485,25 @@ body{
   overflow:hidden;
 }
 .shot img{max-width:82%;max-height:82%;object-fit:contain;display:block;}
+
+/* Шапка листа прилипает к верху: пока человек листает вниз к полям, фотография
+   и место в очереди остаются на экране. Выбрала пять вещей — видно, какую из них
+   сейчас описываешь. */
+.sheet-head--stick{
+  position:sticky;top:0;z-index:5;
+  background:var(--bg);
+  justify-content:flex-start;
+  padding-top:max(20px, calc(env(safe-area-inset-top, 0px) + 10px));
+  padding-bottom:12px;
+  border-bottom:1px solid transparent;
+  transition:border-color .2s ease;
+}
+.sheet-head--stick.is-stuck{border-bottom-color:var(--line);}
+.head-thumb{
+  width:52px;height:68px;flex:0 0 auto;
+  object-fit:contain;background:var(--bg2);
+}
+.sheet-head--stick .chip{margin-left:auto;white-space:nowrap;}
 
 .detect{padding:18px 20px 0;}
 .field{padding:22px 20px 0;}
@@ -1495,11 +1515,10 @@ body{
 
   <!-- ЛИСТ · НОВАЯ ВЕЩЬ (блок D, прототип) -->
   <div class="sheet" id="sh-item" hidden role="dialog" aria-label="Новая вещь">
-    <div class="statusbar"></div>
-    <div class="sheet-head">
+    <div class="sheet-head sheet-head--stick">
       <button class="round" type="button" data-close="sh-item" aria-label="Закрыть">×</button>
-      <span class="chip">[ новая вещь ]</span>
-      <span style="width:36px"></span>
+      <img class="head-thumb" id="item-thumb" alt="">
+      <span class="chip" id="item-chip">[ новая вещь ]</span>
     </div>
 
     <div class="shot"><img id="shot-img" alt=""></div>
@@ -2371,11 +2390,16 @@ body{
   // ─── выбор файлов ───
   var picker = document.getElementById('picker');
   var queue  = [];
+  var batch  = {n: 0, i: 0};          // сколько вещей в пачке и какая по счёту сейчас
+  function startQueue(files){
+    queue = files;
+    batch = {n: queue.length, i: 0};
+    nextInQueue();
+  }
   function pick(){ picker.value = ''; picker.click(); }
   drop.addEventListener('click', pick);
   picker.addEventListener('change', function(){
-    queue = Array.prototype.slice.call(picker.files);
-    nextInQueue();
+    startQueue(Array.prototype.slice.call(picker.files));
   });
 
   // перетаскивание файлов прямо в зону
@@ -2388,13 +2412,20 @@ body{
   drop.addEventListener('drop', function(e){
     var fs = e.dataTransfer && e.dataTransfer.files;
     if (!fs || !fs.length) return;
-    queue = Array.prototype.slice.call(fs).filter(function(f){ return /^image\//.test(f.type); });
-    nextInQueue();
+    startQueue(Array.prototype.slice.call(fs).filter(function(f){ return /^image\//.test(f.type); }));
   });
 
   // ─── лист новой вещи ───
   var shItem   = document.getElementById('sh-item');
   var shotImg  = document.getElementById('shot-img');
+  var itemThumb = document.getElementById('item-thumb');
+  var itemChip  = document.getElementById('item-chip');
+  var headBar   = shItem.querySelector('.sheet-head--stick');
+
+  // волосок под шапкой появляется только когда под ней что-то уехало
+  shItem.addEventListener('scroll', function(){
+    headBar.classList.toggle('is-stuck', shItem.scrollTop > 4);
+  }, {passive:true});
   var nameIn   = document.getElementById('item-name');
   var catsWrap = document.getElementById('item-cats');
   var saveBtn  = document.getElementById('item-save');
@@ -2418,6 +2449,7 @@ body{
 
   function nextInQueue(){
     if (!queue.length) return;
+    batch.i++;
     shrink(queue.shift()).then(openItem);
   }
 
@@ -2428,6 +2460,12 @@ body{
       blob: blob, src: null, cat: '', name: '', mood: [], style: [], weather: []
     };
     shotImg.src = srcFor(draft);
+    itemThumb.src = draft.src;                       // та же фотография в липкой шапке
+    itemChip.textContent = batch.n > 1
+      ? '[ вещь ' + batch.i + ' из ' + batch.n + ' ]'
+      : '[ новая вещь ]';
+    shItem.scrollTop = 0;
+    headBar.classList.remove('is-stuck');
     nameIn.value = '';
     catsWrap.querySelectorAll('.pill').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
     // качества вещи: те же три набора, что на экране фильтров
