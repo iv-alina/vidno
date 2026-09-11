@@ -499,6 +499,14 @@ body{
   transition:border-color .2s ease;
 }
 .sheet-head--stick.is-stuck{border-bottom-color:var(--line);}
+.cutbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:14px 20px 0;min-height:36px;
+}
+.cutbar .pills{margin-top:0;}
+.cutbar .pill{padding:7px 13px;min-height:32px;font-size:13px;}
+.cutbar .mono{flex:0 0 auto;}
+
 .head-thumb{
   width:52px;height:68px;flex:0 0 auto;
   object-fit:contain;background:var(--bg2);
@@ -1523,6 +1531,14 @@ body{
 
     <div class="shot"><img id="shot-img" alt=""></div>
 
+    <div class="cutbar" id="cut-bar">
+      <p class="mono grey" id="cut-note">убираю фон…</p>
+      <div class="pills" id="cut-pick" hidden>
+        <button class="pill" type="button" data-cut="1" aria-pressed="true">Без фона</button>
+        <button class="pill" type="button" data-cut="0" aria-pressed="false">Как снято</button>
+      </div>
+    </div>
+
     <div class="field">
       <p class="mono grey">Категория</p>
       <div class="pills" id="item-cats"></div>
@@ -2052,7 +2068,7 @@ body{
       var f = document.createElement('figure');
       f.className = 'thumb';
       var im = document.createElement('img');
-      im.src = it.src; im.alt = it.name;
+      im.src = picSrc(it); im.alt = it.name;
       f.appendChild(im);
       thumbs.appendChild(f);
     });
@@ -2172,8 +2188,100 @@ body{
     rec.src = URL.createObjectURL(rec.blob);
     return rec.src;
   }
+  // что показываем: вырезанное, если оно есть и человек его не отключил
+  function picSrc(rec){
+    if (rec.useCut && rec.cut){
+      if (!rec.cutSrc) rec.cutSrc = URL.createObjectURL(rec.cut);
+      return rec.cutSrc;
+    }
+    return srcFor(rec);
+  }
   function dropSrc(rec){
-    if (rec && rec.src){ try { URL.revokeObjectURL(rec.src); } catch(_){} rec.src = null; }
+    if (!rec) return;
+    [['src'], ['cutSrc']].forEach(function(k){
+      if (rec[k[0]]){ try { URL.revokeObjectURL(rec[k[0]]); } catch(_){} rec[k[0]] = null; }
+    });
+  }
+
+  // ═══════════ вырезание фона · u2netp ═══════════
+  // Движок и модель лежат рядом с приложением, а не на чужом CDN: работают офлайн,
+  // кешируются нашим же воркером и не зависят от чужого аптайма. Грузятся лениво —
+  // только когда человек добавляет первую вещь, иначе восемь мегабайт на ровном месте.
+  // Модель u2netp (U^2-Net, Apache 2.0) — 4,4 МБ, считает на 320×320.
+  var CUT_SIDE = 320;
+  var CUT_MEAN = [0.485, 0.456, 0.406], CUT_STD = [0.229, 0.224, 0.225];
+  var ortMod = null, cutSess = null, cutLoad = null, cutBroken = false;
+
+  function cutReady(){
+    if (cutSess) return Promise.resolve(cutSess);
+    if (cutLoad) return cutLoad;
+    cutLoad = import('./ort.wasm.bundle.min.mjs').then(function(m){
+      ortMod = m.default && m.default.InferenceSession ? m.default : m;
+      ortMod.env.wasm.numThreads = 1;       // без заголовков COOP/COEP потоки всё равно не поднять
+      ortMod.env.wasm.wasmPaths = './';
+      ortMod.env.logLevel = 'error';
+      return ortMod.InferenceSession.create('./u2netp.onnx', {executionProviders: ['wasm']});
+    }).then(function(x){ cutSess = x; return x; })
+      .catch(function(e){ cutLoad = null; cutBroken = true; throw e; });
+    return cutLoad;
+  }
+
+  function cutout(blob){
+    var bm;
+    return cutReady()
+      .then(function(){ return createImageBitmap(blob); })
+      .then(function(b){
+        bm = b;
+        var c = document.createElement('canvas');
+        c.width = CUT_SIDE; c.height = CUT_SIDE;
+        var g = c.getContext('2d');
+        g.drawImage(bm, 0, 0, CUT_SIDE, CUT_SIDE);
+        var px = g.getImageData(0, 0, CUT_SIDE, CUT_SIDE).data;
+        var n = CUT_SIDE * CUT_SIDE, a = new Float32Array(3 * n), mx = 0, i;
+        for (i = 0; i < n; i++){
+          if (px[i*4]   > mx) mx = px[i*4];
+          if (px[i*4+1] > mx) mx = px[i*4+1];
+          if (px[i*4+2] > mx) mx = px[i*4+2];
+        }
+        mx = (mx || 255) / 255;
+        for (i = 0; i < n; i++){
+          a[i]         = ((px[i*4]   / 255) / mx - CUT_MEAN[0]) / CUT_STD[0];
+          a[n + i]     = ((px[i*4+1] / 255) / mx - CUT_MEAN[1]) / CUT_STD[1];
+          a[2*n + i]   = ((px[i*4+2] / 255) / mx - CUT_MEAN[2]) / CUT_STD[2];
+        }
+        var feeds = {};
+        feeds[cutSess.inputNames[0]] = new ortMod.Tensor('float32', a, [1, 3, CUT_SIDE, CUT_SIDE]);
+        return cutSess.run(feeds);
+      })
+      .then(function(out){
+        var d = out[cutSess.outputNames[0]].data;      // первая карта — основная
+        var n = CUT_SIDE * CUT_SIDE, lo = Infinity, hi = -Infinity, i;
+        for (i = 0; i < n; i++){ if (d[i] < lo) lo = d[i]; if (d[i] > hi) hi = d[i]; }
+        var span = (hi - lo) || 1;
+
+        // Маска на краю полупрозрачная, и в эту кайму затекает белый фон магазина —
+        // получается светлый ореол вокруг вещи. Поджимаем края кривой.
+        var mc = document.createElement('canvas');
+        mc.width = CUT_SIDE; mc.height = CUT_SIDE;
+        var mg = mc.getContext('2d'), mi = mg.createImageData(CUT_SIDE, CUT_SIDE);
+        for (i = 0; i < n; i++){
+          var v = (d[i] - lo) / span;
+          v = (v - 0.16) / 0.68;
+          mi.data[i*4 + 3] = Math.max(0, Math.min(1, v)) * 255;
+        }
+        mg.putImageData(mi, 0, 0);
+
+        var k = Math.min(1, 1000 / Math.max(bm.width, bm.height));
+        var ow = Math.max(1, Math.round(bm.width * k)), oh = Math.max(1, Math.round(bm.height * k));
+        var oc = document.createElement('canvas');
+        oc.width = ow; oc.height = oh;
+        var og = oc.getContext('2d');
+        og.drawImage(bm, 0, 0, ow, oh);
+        og.globalCompositeOperation = 'destination-in';
+        og.drawImage(mc, 0, 0, ow, oh);                 // альфа маски прорезает снимок
+        if (bm.close) bm.close();
+        return new Promise(function(ok){ oc.toBlob(ok, 'image/png'); });
+      });
   }
 
   // ═══════════ гардероб мозаикой · блок H ═══════════
@@ -2272,7 +2380,7 @@ body{
       cell.className = 'm-cell';
       cell.style.height = h + 'px';
       var im = document.createElement('img');
-      im.src = it.src; im.alt = it.name;
+      im.src = picSrc(it); im.alt = it.name;
       cell.appendChild(im);
       var cap = document.createElement('figcaption');       // подпись у каждой вещи
       cap.className = 'm-cap';
@@ -2420,6 +2528,45 @@ body{
   var shotImg  = document.getElementById('shot-img');
   var itemThumb = document.getElementById('item-thumb');
   var itemChip  = document.getElementById('item-chip');
+  var cutNote   = document.getElementById('cut-note');
+  var cutPick   = document.getElementById('cut-pick');
+
+  // Сколько весит разовая загрузка движка и модели — говорим честно, потому что
+  // человек может сидеть на мобильном интернете.
+  function cutStatus(txt){ cutNote.textContent = txt; cutNote.hidden = !txt; }
+
+  function showDraft(){
+    if (!draft) return;
+    var u = picSrc(draft);
+    shotImg.src = u;
+    itemThumb.src = u;
+  }
+
+  function runCut(d){
+    cutPick.hidden = true;
+    cutStatus(cutSess ? 'убираю фон…' : 'первый раз готовлю вырезание · 8 МБ, дальше из памяти');
+    cutout(d.blob).then(function(png){
+      if (draft !== d) return;                       // человек уже листнул дальше
+      if (!png) { cutStatus('фон убрать не вышло'); return; }
+      d.cut = png; d.useCut = true;
+      showDraft();
+      cutStatus('');
+      cutPick.hidden = false;
+    }).catch(function(){
+      if (draft !== d) return;
+      cutStatus(cutBroken ? 'вырезание недоступно на этом телефоне' : 'фон убрать не вышло');
+    });
+  }
+
+  cutPick.addEventListener('click', function(e){
+    var b = e.target.closest('[data-cut]');
+    if (!b || !draft) return;
+    draft.useCut = b.dataset.cut === '1';
+    cutPick.querySelectorAll('[data-cut]').forEach(function(x){
+      x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+    });
+    showDraft();
+  });
   var headBar   = shItem.querySelector('.sheet-head--stick');
 
   // волосок под шапкой появляется только когда под ней что-то уехало
@@ -2459,8 +2606,12 @@ body{
       ord: items.length ? items[items.length - 1].ord + 1 : 0,
       blob: blob, src: null, cat: '', name: '', mood: [], style: [], weather: []
     };
-    shotImg.src = srcFor(draft);
-    itemThumb.src = draft.src;                       // та же фотография в липкой шапке
+    draft.cut = null; draft.useCut = false;
+    showDraft();                                     // та же фотография в липкой шапке
+    cutPick.querySelectorAll('[data-cut]').forEach(function(x){
+      x.setAttribute('aria-pressed', x.dataset.cut === '1' ? 'true' : 'false');
+    });
+    runCut(draft);
     itemChip.textContent = batch.n > 1
       ? '[ вещь ' + batch.i + ' из ' + batch.n + ' ]'
       : '[ новая вещь ]';
@@ -2486,7 +2637,8 @@ body{
     draft.name = (nameIn.value.trim() || draft.cat);
     items.push(draft);
     dbPut({id:draft.id, ord:draft.ord, cat:draft.cat, name:draft.name,
-           blob:draft.blob, mood:draft.mood, style:draft.style, weather:draft.weather});
+           blob:draft.blob, cut:draft.cut || null, useCut:!!draft.useCut,
+           mood:draft.mood, style:draft.style, weather:draft.weather});
     keepStore();
     draft = null;
     closeSheet(shItem);
@@ -2592,7 +2744,7 @@ body{
     lk.things.forEach(function(it, k){
       var f = document.createElement('figure');
       var im = document.createElement('img');
-      im.src = it.src; im.alt = it.name;
+      im.src = picSrc(it); im.alt = it.name;
       f.appendChild(im);
       lookGrid.appendChild(f);
 
@@ -2885,7 +3037,7 @@ body{
       lk.things.forEach(function(it){
         var f = document.createElement('figure');
         var im = document.createElement('img');
-        im.src = it.src; im.alt = it.name;
+        im.src = picSrc(it); im.alt = it.name;
         f.appendChild(im);
         card.appendChild(f);
       });
@@ -2996,8 +3148,8 @@ body{
     if (!rows || !rows.length){ paintMosaic(); return; }
     rows.sort(function(a, b){ return (a.ord || 0) - (b.ord || 0); });
     rows.forEach(function(r){
-      r.src = null;
-      srcFor(r);
+      r.src = null; r.cutSrc = null;
+      picSrc(r);
       QKEYS.forEach(function(g){ if (!Array.isArray(r[g])) r[g] = []; });   // вещи до блока I
     });
     items = rows;

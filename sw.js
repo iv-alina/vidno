@@ -2,8 +2,12 @@
    Задача одна: страница всегда берётся из сети, иконки — из кеша,
    а когда выходит новая версия, приложение предлагает обновиться. */
 
-var BUILD = '20260911-1934';                       // эту строку переписывает deploy.bat при каждой публикации
+var BUILD = '20260911-1955';                       // эту строку переписывает deploy.bat при каждой публикации
 var CACHE = 'vidno-' + BUILD;
+// Движок вырезания и модель — восемнадцать мегабайт. Они не меняются от версии
+// к версии, поэтому живут в отдельном кеше, который при обновлении не сносится.
+var HEAVY = 'vidno-models-v1';
+var HEAVY_RE = /(ort-wasm[^/]*\.wasm|ort\.wasm[^/]*\.mjs|u2netp\.onnx)$/;
 var SHELL = ['./', './index.html', './icon-180.png', './icon-512.png', './manifest.json'];
 
 self.addEventListener('install', function(e){
@@ -23,7 +27,7 @@ self.addEventListener('activate', function(e){
   e.waitUntil(
     caches.keys().then(function(keys){
       return Promise.all(keys.map(function(k){
-        if (k !== CACHE) return caches.delete(k);     // чужие и старые кеши сносим подчистую
+        if (k !== CACHE && k !== HEAVY) return caches.delete(k);   // старое сносим, модель бережём
       }));
     }).then(function(){ return self.clients.claim(); })
   );
@@ -63,13 +67,15 @@ self.addEventListener('fetch', function(e){
     return;
   }
 
-  e.respondWith(                                      // иконки и манифест: сначала кеш
+  var box = HEAVY_RE.test(url.pathname) ? HEAVY : CACHE;
+
+  e.respondWith(                                      // всё остальное: сначала кеш
     caches.match(req).then(function(hit){
       if (hit) return hit;
       return fetch(req).then(function(res){
         if (res.ok){
           var copy = res.clone();
-          caches.open(CACHE).then(function(c){ c.put(req, copy); });
+          caches.open(box).then(function(c){ c.put(req, copy); });
         }
         return res;
       });
