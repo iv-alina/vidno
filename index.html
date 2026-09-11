@@ -1323,6 +1323,10 @@ body{
 
       <div class="cats" id="wr-cats" role="group" aria-label="Категории"></div>
 
+      <p class="mono grey wr-note" id="wr-warn" hidden>
+        [ браузер не даёт хранилище — вещи исчезнут при закрытии ]
+      </p>
+
       <div class="wr-bar">
         <button class="pill--line" type="button" id="wr-filters">Фильтры <b>( 0 )</b></button>
         <span class="mono grey" id="wr-shown">0 из 0</span>
@@ -2074,12 +2078,92 @@ body{
     chOthers.textContent = OTHERS_STUB.toLocaleString('ru-RU');
   }
 
+  // ═══════════ хранилище вещей · IndexedDB ═══════════
+  // Фотографии лежат блобами, а не строками base64: base64 раздувает снимок на треть
+  // и держит его целиком в памяти вкладки. Блоб браузер хранит на диске и отдаёт
+  // ссылкой. localStorage для этого не годится вовсе — там пять мегабайт на всё.
+  var DB_NAME = 'vidno', DB_STORE = 'items', db = null, dbOff = false;
+
+  function dbOpen(){
+    return new Promise(function(ok){
+      if (db) return ok(db);
+      if (dbOff || !window.indexedDB) return ok(null);
+      var rq;
+      try { rq = indexedDB.open(DB_NAME, 1); }
+      catch(_){ dbOff = true; return ok(null); }
+      rq.onupgradeneeded = function(){
+        var d = rq.result;
+        if (!d.objectStoreNames.contains(DB_STORE)) d.createObjectStore(DB_STORE, {keyPath:'id'});
+      };
+      rq.onsuccess = function(){ db = rq.result; ok(db); };
+      rq.onerror   = function(){ dbOff = true; ok(null); };
+      rq.onblocked = function(){ dbOff = true; ok(null); };
+    });
+  }
+  function dbRun(mode, fn){
+    return dbOpen().then(function(d){
+      if (!d) return null;
+      return new Promise(function(ok){
+        var rq;
+        try { rq = fn(d.transaction(DB_STORE, mode).objectStore(DB_STORE)); }
+        catch(_){ dbOff = true; return ok(null); }
+        rq.onsuccess = function(){ ok(rq.result); };
+        rq.onerror   = function(){ dbOff = true; ok(null); };
+      });
+    });
+  }
+  var dbPut  = function(rec){ return dbRun('readwrite', function(st){ return st.put(rec); }); };
+  var dbDel  = function(id){  return dbRun('readwrite', function(st){ return st.delete(id); }); };
+  var dbAll  = function(){    return dbRun('readonly',  function(st){ return st.getAll(); }); };
+  var dbWipe = function(){    return dbRun('readwrite', function(st){ return st.clear(); }); };
+
+  // Просим браузер не выбрасывать наши данные при нехватке места. Спрашиваем один
+  // раз и молча: отказ ничего не ломает, вещи просто становятся уязвимее к очистке.
+  var asked4Persist = false;
+  function keepStore(){
+    if (asked4Persist || !navigator.storage || !navigator.storage.persist) return;
+    asked4Persist = true;
+    try { navigator.storage.persist(); } catch(_){}
+  }
+
+  // Снимок с телефона — это 4000×3000 и мегабайты. В приложении он нигде не нужен
+  // больше 1400 px по длинной стороне, а модель вырезания фона и вовсе работает
+  // на 320×320. Ужимаем сразу: экономит место, память и время загрузки мозаики.
+  var MAX_SIDE = 1400;
+  function shrink(file){
+    var open = window.createImageBitmap
+      ? createImageBitmap(file, {imageOrientation:'from-image'})
+          .catch(function(){ return createImageBitmap(file); })   // старый Safari без опции
+      : Promise.reject();
+    return open.then(function(bm){
+      var k = Math.min(1, MAX_SIDE / Math.max(bm.width, bm.height));
+      var w = Math.max(1, Math.round(bm.width * k)), h = Math.max(1, Math.round(bm.height * k));
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(bm, 0, 0, w, h);
+      if (bm.close) bm.close();
+      return new Promise(function(ok){
+        c.toBlob(function(b){ ok(b || file); }, 'image/jpeg', 0.82);
+      });
+    }).catch(function(){ return file; });     // не вышло ужать — берём как есть
+  }
+
+  function srcFor(rec){
+    if (rec.src) return rec.src;
+    rec.src = URL.createObjectURL(rec.blob);
+    return rec.src;
+  }
+  function dropSrc(rec){
+    if (rec && rec.src){ try { URL.revokeObjectURL(rec.src); } catch(_){} rec.src = null; }
+  }
+
   // ═══════════ гардероб мозаикой · блок H ═══════════
 
   var wrCount  = document.getElementById('wr-count');
   var wrCats   = document.getElementById('wr-cats');
   var wrShown  = document.getElementById('wr-shown');
   var mosaic   = document.getElementById('mosaic');
+  var wrWarn   = document.getElementById('wr-warn');
   var wrEmpty  = document.getElementById('wr-empty');
   var HEIGHTS  = [232, 176, 198, 250, 184, 214];   // ритм блоков разной высоты
   var filter   = 'Всё';
@@ -2160,6 +2244,7 @@ body{
     wrCount.textContent = '( ' + items.length + ' )';
     wrShown.textContent = shown.length + ' из ' + items.length;
     wrEmpty.hidden = items.length > 0;
+    wrWarn.hidden   = !dbOff;
     mosaic.hidden   = items.length === 0;
     mosaic.innerHTML = '';
     shown.forEach(function(it, i){
@@ -2206,7 +2291,11 @@ body{
     paintWardrobe();
     undoBar.hidden = false;
     clearTimeout(undoTimer);
-    undoTimer = setTimeout(function(){ undoBar.hidden = true; removed = null; }, 5200);
+    undoTimer = setTimeout(function(){
+      undoBar.hidden = true;
+      if (removed){ dbDel(removed.item.id); dropSrc(removed.item); }   // окно отмены закрылось
+      removed = null;
+    }, 5200);
   }
 
   document.getElementById('undo-btn').addEventListener('click', function(){
@@ -2329,15 +2418,16 @@ body{
 
   function nextInQueue(){
     if (!queue.length) return;
-    var file = queue.shift();
-    var r = new FileReader();
-    r.onload = function(e){ openItem(e.target.result); };
-    r.readAsDataURL(file);
+    shrink(queue.shift()).then(openItem);
   }
 
-  function openItem(src){
-    draft = {src: src, cat: '', name: '', mood: [], style: [], weather: []};
-    shotImg.src = src;
+  function openItem(blob){
+    draft = {
+      id: 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      ord: items.length ? items[items.length - 1].ord + 1 : 0,
+      blob: blob, src: null, cat: '', name: '', mood: [], style: [], weather: []
+    };
+    shotImg.src = srcFor(draft);
     nameIn.value = '';
     catsWrap.querySelectorAll('.pill').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
     // качества вещи: те же три набора, что на экране фильтров
@@ -2357,6 +2447,9 @@ body{
     if (!draft) return;
     draft.name = (nameIn.value.trim() || draft.cat);
     items.push(draft);
+    dbPut({id:draft.id, ord:draft.ord, cat:draft.cat, name:draft.name,
+           blob:draft.blob, mood:draft.mood, style:draft.style, weather:draft.weather});
+    keepStore();
     draft = null;
     closeSheet(shItem);
     paintWardrobe();
@@ -2846,8 +2939,10 @@ body{
 
   // ─── сброс на время тестов ───
   document.getElementById('reset').addEventListener('click', function(){
+    items.forEach(dropSrc);
     items = []; flags = {}; filter = 'Всё'; remember();
     try { localStorage.removeItem('vidno'); } catch(_){}
+    dbWipe();
     paintWardrobe();
     show('s-build');
   });
@@ -2856,6 +2951,20 @@ body{
   paintDate();
   fetchWx();
   paintWardrobe();
+
+  // Шкаф поднимается с диска. Заставка идёт шесть секунд — успеваем задолго до неё,
+  // поэтому route() увидит уже настоящее число вещей, а не ноль.
+  dbAll().then(function(rows){
+    if (!rows || !rows.length){ paintMosaic(); return; }
+    rows.sort(function(a, b){ return (a.ord || 0) - (b.ord || 0); });
+    rows.forEach(function(r){
+      r.src = null;
+      srcFor(r);
+      QKEYS.forEach(function(g){ if (!Array.isArray(r[g])) r[g] = []; });   // вещи до блока I
+    });
+    items = rows;
+    paintWardrobe();
+  });
 
 })();
 </script>
