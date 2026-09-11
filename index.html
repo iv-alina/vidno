@@ -742,6 +742,8 @@ body{
 
 /* строка «фильтры · N из M» */
 .wr-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 0;}
+.wr-cutrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px 0;}
+.wr-cutrow .pill--line:disabled{border-color:var(--line);color:var(--grey);cursor:default;}
 .pill--line{
   display:inline-flex;
   align-items:center;
@@ -1358,6 +1360,11 @@ body{
       <div class="wr-bar">
         <button class="pill--line" type="button" id="wr-filters">Фильтры <b>( 0 )</b></button>
         <span class="mono grey" id="wr-shown">0 из 0</span>
+      </div>
+
+      <div class="wr-cutrow" id="wr-cutrow" hidden>
+        <button class="pill--line" type="button" id="wr-cut">Убрать фон <b>( 0 )</b></button>
+        <span class="mono grey" id="wr-cut-note"></span>
       </div>
 
       <div class="mosaic" id="mosaic"></div>
@@ -2148,6 +2155,12 @@ body{
     });
   }
   var dbPut  = function(rec){ return dbRun('readwrite', function(st){ return st.put(rec); }); };
+  // одна точка записи вещи, чтобы поля не разъезжались между местами сохранения
+  function saveItem(it){
+    return dbPut({id:it.id, ord:it.ord, cat:it.cat, name:it.name,
+                  blob:it.blob, cut:it.cut || null, useCut:!!it.useCut,
+                  mood:it.mood, style:it.style, weather:it.weather});
+  }
   var dbDel  = function(id){  return dbRun('readwrite', function(st){ return st.delete(id); }); };
   var dbAll  = function(){    return dbRun('readonly',  function(st){ return st.getAll(); }); };
   var dbWipe = function(){    return dbRun('readwrite', function(st){ return st.clear(); }); };
@@ -2291,6 +2304,10 @@ body{
   var wrShown  = document.getElementById('wr-shown');
   var mosaic   = document.getElementById('mosaic');
   var wrWarn   = document.getElementById('wr-warn');
+  var wrCutRow = document.getElementById('wr-cutrow');
+  var wrCut    = document.getElementById('wr-cut');
+  var wrCutNote = document.getElementById('wr-cut-note');
+  var cutBusy  = false;
   var wrEmpty  = document.getElementById('wr-empty');
   var HEIGHTS  = [232, 176, 198, 250, 184, 214];   // ритм блоков разной высоты
   var filter   = 'Всё';
@@ -2363,6 +2380,43 @@ body{
     });
   }
 
+  // Вещи, добавленные до появления вырезания, остаются с фоном: обработка идёт
+  // в момент съёмки. Поэтому даём разовую кнопку — пройтись по старым.
+  function paintCutRow(){
+    var left = items.filter(function(it){ return !it.cut; }).length;
+    wrCutRow.hidden = cutBroken || left === 0 || items.length === 0;
+    wrCut.querySelector('b').textContent = '( ' + left + ' )';
+    wrCut.disabled = cutBusy;
+  }
+
+  function cutAll(){
+    if (cutBusy) return;
+    var todo = items.filter(function(it){ return !it.cut; });
+    if (!todo.length) return;
+    cutBusy = true;
+    paintCutRow();
+    var i = 0;
+    (function step(){
+      if (i >= todo.length){
+        cutBusy = false; wrCutNote.textContent = ''; paintMosaic(); return;
+      }
+      var it = todo[i];
+      wrCutNote.textContent = (cutSess ? '' : 'первый раз готовлю · 8 МБ · ')
+                            + (i + 1) + ' из ' + todo.length;
+      cutout(it.blob).then(function(png){
+        if (png){ it.cut = png; it.useCut = true; it.cutSrc = null; saveItem(it); }
+      }).catch(function(){
+        if (cutBroken) { todo.length = i; wrCutNote.textContent = 'вырезание недоступно'; }
+      }).then(function(){
+        i++;
+        paintMosaic();                       // каждая вещь проявляется сразу, а не пачкой в конце
+        setTimeout(step, 30);                // отпускаем поток, иначе экран замирает
+      });
+    })();
+  }
+
+  wrCut.addEventListener('click', cutAll);
+
   function paintMosaic(){
     paintCats();
     var shown = items.filter(function(it){
@@ -2372,6 +2426,7 @@ body{
     wrShown.textContent = shown.length + ' из ' + items.length;
     wrEmpty.hidden = items.length > 0;
     wrWarn.hidden   = !dbOff;
+    paintCutRow();
     mosaic.hidden   = items.length === 0;
     mosaic.innerHTML = '';
     shown.forEach(function(it, i){
@@ -2636,9 +2691,7 @@ body{
     if (!draft) return;
     draft.name = (nameIn.value.trim() || draft.cat);
     items.push(draft);
-    dbPut({id:draft.id, ord:draft.ord, cat:draft.cat, name:draft.name,
-           blob:draft.blob, cut:draft.cut || null, useCut:!!draft.useCut,
-           mood:draft.mood, style:draft.style, weather:draft.weather});
+    saveItem(draft);
     keepStore();
     draft = null;
     closeSheet(shItem);
