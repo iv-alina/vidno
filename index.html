@@ -38,6 +38,12 @@
   --accent:#D98FA4;      /* розовый, 7,5:1 */
   --acc-ink:#1A121C;     /* текст на розовой заливке, 7,3:1 */
   --studio:#141017;      /* поле экрана сборки */
+  /* Плитка вещи — светлая, потому что шкаф у большинства людей тёмный, и на
+     сливовом фоне чёрные вещи просто исчезают. Приложение при этом остаётся
+     тёмным: светлая только карточка, как лист в витрине. */
+  --card:#E8DFE6;        /* фон плитки, 14,5:1 к фону приложения */
+  --card-ink:#1C1420;    /* название вещи, 13,8:1 */
+  --card-sub:#5E5069;    /* служебная строка, 5,7:1 */
   --scrim:20,16,23;      /* фон в rgba-виде — для затемнений поверх фотографий */
   --lift:242,234,238;    /* текст в rgba-виде — для светлых волосков на тёмном */
 
@@ -765,31 +771,22 @@ body{
 .wr-note{padding:12px 20px 0;color:var(--grey);}
 
 /* мозаика: блоки разной высоты в два столбца, во всю ширину экрана */
-.mosaic{column-count:2;column-gap:0;padding:22px 0 136px;}
+.mosaic{column-count:2;column-gap:6px;padding:22px 0 136px;}
 .m-cell{
   break-inside:avoid;
   -webkit-column-break-inside:avoid;
   page-break-inside:avoid;
-  margin:0;
+  margin:0 0 6px;
   padding:0;
-  background:var(--bg2);
+  background:var(--card);
   position:relative;
   display:block;
   overflow:hidden;
 }
 .m-cell img{width:100%;height:100%;object-fit:contain;padding:16px 16px 46px;display:block;}
 /* рамок нет: границу блока держит еле заметный светлый ореол по краю */
-.m-cell::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    linear-gradient(180deg, rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px),
-    linear-gradient(0deg,   rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px),
-    linear-gradient(90deg,  rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px),
-    linear-gradient(270deg, rgba(var(--lift),.14) 0, rgba(var(--lift),0) 10px);
-}
+/* на светлой плитке светлый ореол не нужен — край и так виден против тёмного фона */
+.m-cell::after{content:none;}
 .m-cap{
   position:absolute;
   left:16px;right:16px;bottom:14px;
@@ -798,12 +795,13 @@ body{
   flex-direction:column;
   gap:3px;
 }
+.m-cap .grey{color:var(--card-sub);}   /* служебный серый на светлой плитке не читается */
 .m-name{
   font-family:var(--f-body);
   font-size:13px;
   font-weight:300;
   line-height:1.2;
-  color:var(--ink);
+  color:var(--card-ink);
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
@@ -819,8 +817,8 @@ body{
 }
 .m-del i{
   width:26px;height:26px;border-radius:50%;
-  background:rgba(var(--scrim),.86);
-  color:rgba(var(--lift),.70);
+  background:rgba(var(--scrim),.78);
+  color:rgba(var(--lift),.88);
   font-family:var(--f-body);font-size:15px;font-style:normal;line-height:1;
   display:flex;align-items:center;justify-content:center;
 }
