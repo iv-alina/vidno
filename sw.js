@@ -2,13 +2,13 @@
    Задача одна: страница всегда берётся из сети, иконки — из кеша,
    а когда выходит новая версия, приложение предлагает обновиться. */
 
-var BUILD = '20260911-2143';                       // эту строку переписывает deploy.bat при каждой публикации
+var BUILD = '20260911-2150';                       // эту строку переписывает deploy.bat при каждой публикации
 var CACHE = 'vidno-' + BUILD;
 // Движок вырезания и модель — восемнадцать мегабайт. Они не меняются от версии
 // к версии, поэтому живут в отдельном кеше, который при обновлении не сносится.
 var HEAVY = 'vidno-models-v1';
 var HEAVY_RE = /(ort-wasm[^/]*\.wasm|ort\.wasm[^/]*\.mjs|u2netp\.onnx)$/;
-var SHELL = ['./', './index.html', './icon-180.png', './icon-512.png', './manifest.json'];
+var SHELL = ['./', './index.html', './icon-180.png', './icon-192.png', './icon-512.png', './manifest.json'];
 
 self.addEventListener('install', function(e){
   e.waitUntil(
